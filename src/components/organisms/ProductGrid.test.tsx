@@ -32,11 +32,11 @@ function renderGrid(props: Partial<ProductGridProps<Product>> = {}) {
 }
 
 describe('ProductGrid', () => {
-  it('muestra una tarjeta por producto con imagen, nombre y precio', () => {
+  it('muestra una tarjeta por producto con nombre y precio, sin imagen', () => {
     renderGrid()
     const cards = within(screen.getByRole('list', { name: 'Productos' })).getAllByRole('listitem')
     expect(cards).toHaveLength(2)
-    expect(within(cards[0]).getByRole('img', { name: 'Hamburguesa' })).toHaveTextContent('H')
+    expect(within(cards[0]).queryByRole('img')).not.toBeInTheDocument()
     expect(within(cards[0]).getByRole('link', { name: 'Hamburguesa' })).toHaveAttribute('href', '/products/7')
     expect(within(cards[0]).getByText('$12.50')).toBeInTheDocument()
   })

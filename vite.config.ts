@@ -13,7 +13,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}', 'src/**/*.steps.{ts,tsx}'],
     env: {
-      VITE_API_URL: 'http://api.test',
+      VITE_API_URL: 'http://api.test/SrKioscoRemote/GetProducts?KioskID=87',
       VITE_API_TOKEN: 'test-token',
     },
   },

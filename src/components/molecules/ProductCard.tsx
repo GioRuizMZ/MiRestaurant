@@ -1,6 +1,5 @@
 import { Link } from 'react-router'
 import { Button } from '@/components/atoms/Button'
-import { Image } from '@/components/atoms/Image'
 import { Price } from '@/components/atoms/Price'
 import type { Product } from '@/types/product'
 
@@ -11,28 +10,25 @@ export interface ProductCardProps {
 }
 
 /**
- * Tarjeta de producto. El enlace del nombre se estira sobre toda la tarjeta
- * (stretched link) y el botón "Agregar" queda por encima para no navegar.
+ * Tarjeta de producto: nombre y precio. El enlace del nombre se estira sobre toda
+ * la tarjeta (stretched link) y el botón "Agregar" queda por encima para no navegar.
  */
 export function ProductCard({ product, href, onAdd }: ProductCardProps) {
   return (
     <article
       className={
-        'group relative flex h-full flex-col overflow-hidden rounded-card border border-line bg-surface ' +
+        'group relative flex h-full flex-col justify-between gap-6 rounded-card border border-line bg-surface p-5 ' +
         'transition duration-150 hover:border-primary-200 hover:shadow-md motion-safe:hover:-translate-y-0.5 ' +
         'focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-canvas'
       }
     >
-      <Image src="" alt={product.name} fallbackText={product.name} className="aspect-[4/3] w-full" />
-      <div className="flex flex-1 items-end justify-between gap-3 p-4">
-        <div className="min-w-0">
-          <h2 className="line-clamp-2 text-base font-medium text-ink">
-            <Link to={href} className="outline-none after:absolute after:inset-0 after:content-['']">
-              {product.name}
-            </Link>
-          </h2>
-          <Price value={product.price} className="text-sm text-muted" />
-        </div>
+      <h2 className="line-clamp-2 text-base font-medium text-ink">
+        <Link to={href} className="outline-none after:absolute after:inset-0 after:content-['']">
+          {product.name}
+        </Link>
+      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <Price value={product.price} className="text-lg text-ink" />
         <Button
           variant="secondary"
           size="sm"

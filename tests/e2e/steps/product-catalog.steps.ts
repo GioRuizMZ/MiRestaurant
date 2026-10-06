@@ -27,11 +27,11 @@ Then(
   },
 )
 
-When('el usuario hace click sobre la imagen de la tarjeta de {string}', async ({ page }, name: string) => {
-  // El enlace estirado cubre la imagen: el click en esa zona debe abrir el detalle.
-  const image = cardOf(page, name).getByRole('img', { name })
-  const box = await image.boundingBox()
-  if (!box) throw new Error('La imagen de la tarjeta no es visible')
+When('el usuario hace click sobre el precio de la tarjeta de {string}', async ({ page }, name: string) => {
+  // El enlace estirado cubre toda la tarjeta: el click sobre el precio debe abrir el detalle.
+  const price = cardOf(page, name).getByText(/^\$\d+\.\d{2}$/)
+  const box = await price.boundingBox()
+  if (!box) throw new Error('El precio de la tarjeta no es visible')
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
 })
 

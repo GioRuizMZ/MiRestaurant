@@ -5,7 +5,7 @@ import { productKeys } from './queryKeys'
 
 /**
  * Detalle de un producto. Si el catálogo ya está en caché, muestra ese producto
- * de inmediato (placeholder) mientras consulta GET /products/:id.
+ * de inmediato (placeholder) mientras vuelve a consultar la API.
  */
 export function useProduct(id: number) {
   const queryClient = useQueryClient()

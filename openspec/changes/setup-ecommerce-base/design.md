@@ -172,16 +172,23 @@ createBrowserRouter([
 
 `AppLayout` (template) recibe `cartCount`, `searchValue`, `onSearchChange`, `sidebarOpen`, `onToggleSidebar` y `children`, y no sabe nada de los stores. Breakpoint `md` (768 px): por debajo, el sidebar es un drawer superpuesto que se cierra con cada cambio de `location`.
 
-### 9. Contrato provisional de la API
+### 9. Contrato de la API (SrKiosco)
 
 ```
-GET /products      -> Product[]
-GET /products/:id  -> Product | 404
-Product = { id: number; sku: string; name: string;
-            description: string; price: number }
+GET <VITE_API_URL>     p. ej. https://srkiosco-api-beta.azurewebsites.net/SrKioscoRemote/GetProducts?KioskID=87
+Authorization: Bearer <VITE_API_TOKEN>
+-> { isSuccess: boolean, code: string, message: string, data: ProductDto[] | null }
+
+ProductDto = { id, sku, barcode, name, description, image, price, isAvailable,
+               reference, category, orderIndex, printers[], modifier[] }
+Product    = { id: number; sku: string; name: string; description: string; price: number }
 ```
 
-Si la API real usa otros nombres de campos, el mapeo se hace **solo** en `productService` (API → `Product`). El resto de la app no cambia. La API no provee imágenes ni categorías (ver §13).
+- `VITE_API_URL` es la **URL absoluta** del endpoint y se usa tal cual: el cliente no tiene `baseURL` ni concatena rutas.
+- Los productos se leen de `data`. `isSuccess` se ignora porque llega en `false` incluso con `code: "0000"` ("Procesado exitosamente").
+- **No hay endpoint por id**: `getProduct(id)` busca en la lista y lanza `ApiError` 404 si no existe.
+- El mapeo `ProductDto → Product` vive solo en `productService`. La API sí trae `image`, `category` e `isAvailable`, pero hoy el modelo `Product` no los usa (ver §13 y Open Questions).
+- MSW simula el endpoint `*/SrKioscoRemote/GetProducts` con el mismo sobre.
 
 ### 10. BDD en dos niveles
 
@@ -232,12 +239,11 @@ feature/shopping-cart                              *-*
 | Menu principal                                               |
 |                                                              |
 | +------------+  +------------+  +------------+  +----------+ |
-| |            |  |            |  |            |  |          | |
-| |     C      |  |     C      |  |     E      |  |    H     | |   <- placeholder 4:3
-| |            |  |            |  |            |  |          | |      con la inicial
+| | Cafe       |  | Coca-Cola  |  | Ensalada   |  | Hamburg. | |   <- sin imagen:
+| | americano  |  |            |  |            |  |          | |      nombre arriba,
+| |            |  |            |  |            |  |          | |      precio y boton
+| | $3.50 [Agr]|  | $2.50 [Agr]|  | $8.00 [Agr]|  |$12.50 [A]| |      abajo
 | +------------+  +------------+  +------------+  +----------+ |
-| Cafe americano  Coca-Cola       Ensalada        Hamburguesa  |
-| $3.50 [Agregar] $2.50 [Agregar] $8.00 [Agregar] $12.50 [Agr] |
 +--------------------------------------------------------------+
   grilla: 1 col (movil) / 2 (sm) / 3 (lg) / 4 (xl)
 ```
@@ -247,9 +253,9 @@ feature/shopping-cart                              *-*
 - El orden lo aplica la página sobre los datos de `useProducts()`, con `useMemo`, sin tocar la caché. Si después se suma la búsqueda, primero se filtra y luego se ordena, así los resultados filtrados también quedan de la A a la Z.
 - Alternativa descartada: usar `select` en `useProducts`. Mezcla una decisión de presentación con la query y obligaría a que todos los consumidores reciban la lista ordenada.
 
-**Imagen sin campo en la API**
-- `Product` no tiene imagen. El atom `Image` se extiende con la prop `fallbackText`: si `src` está vacío o falla, muestra un área de fondo neutro con la inicial de `fallbackText` en mayúscula. Mantiene `role="img"` y `aria-label` igual al nombre. `ProductCard` lo usa con proporción 4:3 (`aspect-[4/3]`) y `src=""`. Se descartó crear una molecule nueva (`ProductThumbnail`), porque es presentación pura sin composición y le corresponde al atom.
-- Cuando la API agregue imágenes, se suma `image?: string` a `Product`, se mapea en `productService` y el placeholder queda como fallback ante una URL vacía o con error. Las specs no cambian.
+**Sin imagen**
+- Los productos no tienen imagen, así que la tarjeta no reserva un área para ella: muestra el nombre (hasta 2 líneas) arriba y, abajo, el precio y el botón "Agregar". El skeleton de carga tiene la misma forma.
+- Se descartó un placeholder con la inicial: ocupaba espacio sin aportar información.
 
 **Tarjeta clicable con un botón dentro**
 - Se usa el patrón de "stretched link": el nombre es un `<Link to="/products/:id">` con un pseudo-elemento `after:absolute after:inset-0` que cubre toda la tarjeta. El botón "Agregar" va en `relative z-10`, así queda encima del enlace y no navega.
@@ -289,5 +295,7 @@ No hay nada que migrar porque el repositorio está vacío. Rollback: como es el 
 ## Open Questions
 
 - Los valores reales de `VITE_API_URL` y `VITE_API_TOKEN` y los nombres de campo de la API real. Solo afectan a `productService`, los fixtures y `.env`, no a las specs.
+- **`category` e `isAvailable`** llegan en la respuesta de la API pero el modelo `Product` no los usa. Se decide al planificar búsqueda y detalle.
+- **KioskID**: con `KioskID=87` la API devuelve hoy 0 productos; con `KioskID=8` devuelve 54 (todos con `category: 87`). Se configura solo en `VITE_API_URL`.
 - **El modelo sin `image` ni `category` afecta a otras specs**, que todavía los mencionan: `product-search` (coincidencia por categoría), `product-detail` (imagen y categoría) y `shopping-cart` (imagen de cada línea). Se resuelven al planificar cada una de esas features. No bloquean el menú principal.
 - La moneda y el locale de los precios. Por ahora se usa `en-US` con `USD`, que produce `$12.50` como piden los escenarios (`es` produciría `12,50 US$`). Es configurable en `formatPrice`, pero si se cambia hay que actualizar los escenarios.

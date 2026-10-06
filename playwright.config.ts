@@ -30,7 +30,7 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     env: {
-      VITE_API_URL: 'http://api.e2e',
+      VITE_API_URL: 'http://api.e2e/SrKioscoRemote/GetProducts?KioskID=87',
       VITE_API_TOKEN: 'e2e-token',
     },
   },

@@ -7,12 +7,12 @@ Menú principal de MiRestaurant: muestra los productos disponibles ordenados por
 ## ADDED Requirements
 
 ### Requirement: Listado de productos
-La pantalla principal (`/`) SHALL mostrar, bajo el título "Menú principal", todos los productos devueltos por la API en una grilla de tarjetas. Cada tarjeta muestra la imagen, el nombre y el precio formateado en moneda.
+La pantalla principal (`/`) SHALL mostrar, bajo el título "Menú principal", todos los productos devueltos por la API en una grilla de tarjetas. Cada tarjeta muestra el nombre y el precio formateado en moneda, sin imagen, porque los productos no tienen imagen.
 
 #### Scenario: Menú con productos
 - **GIVEN** la API devuelve 3 productos
 - **WHEN** el usuario abre la pantalla principal
-- **THEN** ve el título "Menú principal" y 3 tarjetas, cada una con imagen, nombre y precio
+- **THEN** ve el título "Menú principal" y 3 tarjetas, cada una con nombre y precio y sin imagen
 
 ### Requirement: Orden alfabético por nombre
 Los productos SHALL mostrarse ordenados por nombre de la A a la Z, sin distinguir mayúsculas, minúsculas ni tildes, independientemente del orden en que los devuelva la API.
@@ -26,15 +26,6 @@ Los productos SHALL mostrarse ordenados por nombre de la A a la Z, sin distingui
 - **GIVEN** la API devuelve "Ñoquis", "agua mineral", "Éclair" y "Burrito"
 - **WHEN** el usuario abre la pantalla principal
 - **THEN** ve las tarjetas en el orden "agua mineral", "Burrito", "Éclair", "Ñoquis"
-
-### Requirement: Imagen del producto
-Cada tarjeta SHALL tener un área de imagen de proporción fija. Mientras la API no provea imágenes de producto, esa área muestra un placeholder de color neutro con la inicial del nombre del producto en mayúscula.
-
-#### Scenario: Placeholder con inicial
-- **GIVEN** la API devuelve el producto "Hamburguesa" sin imagen
-- **WHEN** el usuario ve su tarjeta
-- **THEN** el área de imagen muestra la letra "H" sobre un fondo neutro
-- **AND** el área de imagen tiene el texto alternativo "Hamburguesa"
 
 ### Requirement: Estado de carga
 Mientras los productos se cargan, la pantalla SHALL mostrar tarjetas skeleton con la forma de la grilla.
@@ -65,7 +56,7 @@ Si la API devuelve una lista vacía, la pantalla SHALL mostrar el mensaje "No ha
 - **THEN** ve el mensaje "No hay productos disponibles"
 
 ### Requirement: Navegación al detalle
-Hacer click en cualquier parte de una tarjeta de producto (imagen, nombre o precio), salvo en su botón "Agregar", SHALL navegar a la pantalla de detalle de ese producto.
+Hacer click en cualquier parte de una tarjeta de producto (nombre, precio o espacio libre), salvo en su botón "Agregar", SHALL navegar a la pantalla de detalle de ese producto.
 
 #### Scenario: Abrir detalle
 - **WHEN** el usuario hace click en la tarjeta de "Hamburguesa" (id 7)

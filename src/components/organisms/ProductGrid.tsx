@@ -24,13 +24,14 @@ export function ProductGrid<T extends GridProduct>({
     return (
       <div role="status" aria-label="Cargando productos" className={GRID}>
         {Array.from({ length: SKELETON_COUNT }, (_, index) => (
-          <div key={index} data-testid="product-skeleton" className="overflow-hidden rounded-card border border-line bg-surface">
-            <Skeleton className="aspect-[4/3] w-full rounded-none" />
-            <div className="flex items-end justify-between gap-3 p-4">
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/3" />
-              </div>
+          <div
+            key={index}
+            data-testid="product-skeleton"
+            className="flex flex-col gap-6 rounded-card border border-line bg-surface p-5"
+          >
+            <Skeleton className="h-4 w-3/4" />
+            <div className="flex items-center justify-between gap-3">
+              <Skeleton className="h-5 w-16" />
               <Skeleton className="h-8 w-20" />
             </div>
           </div>

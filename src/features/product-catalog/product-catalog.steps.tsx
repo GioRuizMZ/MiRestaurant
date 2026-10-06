@@ -48,12 +48,12 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     When('el usuario abre la pantalla principal', () => {
       app = renderApp('/')
     })
-    Then('ve el título "Menú principal" y 3 tarjetas, cada una con imagen, nombre y precio', async () => {
+    Then('ve el título "Menú principal" y 3 tarjetas, cada una con nombre y precio y sin imagen', async () => {
       expect(screen.getByRole('heading', { level: 1, name: 'Menú principal' })).toBeInTheDocument()
       const items = within(await productList()).getAllByRole('listitem')
       expect(items).toHaveLength(3)
       for (const item of items) {
-        expect(within(item).getByRole('img')).toBeInTheDocument()
+        expect(within(item).queryByRole('img')).not.toBeInTheDocument()
         expect(within(item).getByRole('heading')).not.toBeEmptyDOMElement()
         expect(within(item).getByText(/^\$\d+\.\d{2}$/)).toBeInTheDocument()
       }
@@ -83,27 +83,6 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     })
     Then('ve las tarjetas en el orden "agua mineral", "Burrito", "Éclair", "Ñoquis"', async () => {
       expect(await cardNames()).toEqual(['agua mineral', 'Burrito', 'Éclair', 'Ñoquis'])
-    })
-  })
-
-  Scenario('Placeholder con inicial', ({ Given, When, Then, And }) => {
-    let card: HTMLElement
-
-    Given('la API devuelve el producto "Hamburguesa" sin imagen', () => {
-      server.use(scenarioHandlers.productsList([products[0]]))
-    })
-    When('el usuario ve su tarjeta', async () => {
-      app = renderApp('/')
-      card = await cardOf('Hamburguesa')
-    })
-    Then('el área de imagen muestra la letra "H" sobre un fondo neutro', () => {
-      const image = within(card).getByRole('img')
-      expect(image.tagName).not.toBe('IMG')
-      expect(image).toHaveTextContent(/^H$/)
-      expect(image.className).toContain('bg-primary-50')
-    })
-    And('el área de imagen tiene el texto alternativo "Hamburguesa"', () => {
-      expect(within(card).getByRole('img', { name: 'Hamburguesa' })).toBeInTheDocument()
     })
   })
 

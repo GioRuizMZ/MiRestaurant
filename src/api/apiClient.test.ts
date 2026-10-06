@@ -17,48 +17,36 @@ async function captureError(promise: Promise<unknown>): Promise<ApiError> {
 }
 
 describe('apiClient', () => {
-  it('envía las peticiones relativas a VITE_API_URL', async () => {
-    let requestedUrl = ''
-    server.use(
-      http.get('http://api.test/products', ({ request }) => {
-        requestedUrl = request.url
-        return HttpResponse.json([])
-      }),
-    )
-    await apiClient.get('/products')
-    expect(requestedUrl).toBe('http://api.test/products')
-  })
-
   it('adjunta Authorization: Bearer con VITE_API_TOKEN', async () => {
     let authorization: string | null = null
     server.use(
-      http.get('*/ping', ({ request }) => {
+      http.get('http://api.test/ping', ({ request }) => {
         authorization = request.headers.get('Authorization')
         return HttpResponse.json({})
       }),
     )
-    await apiClient.get('/ping')
+    await apiClient.get('http://api.test/ping')
     expect(authorization).toBe('Bearer test-token')
   })
 
   it('normaliza una respuesta 500', async () => {
-    server.use(http.get('*/boom', () => HttpResponse.json({}, { status: 500 })))
-    const error = await captureError(apiClient.get('/boom'))
+    server.use(http.get('http://api.test/boom', () => HttpResponse.json({}, { status: 500 })))
+    const error = await captureError(apiClient.get('http://api.test/boom'))
     expect(error).toBeInstanceOf(ApiError)
     expect(error.status).toBe(500)
     expect(error.message).toMatch(/servidor/i)
   })
 
   it('normaliza un error de red con status null', async () => {
-    server.use(http.get('*/offline', () => HttpResponse.error()))
-    const error = await captureError(apiClient.get('/offline'))
+    server.use(http.get('http://api.test/offline', () => HttpResponse.error()))
+    const error = await captureError(apiClient.get('http://api.test/offline'))
     expect(error.status).toBeNull()
     expect(error.message).toMatch(/conexión/i)
   })
 
   it('indica que el token no es válido ante un 401', async () => {
-    server.use(http.get('*/private', () => HttpResponse.json({}, { status: 401 })))
-    const error = await captureError(apiClient.get('/private'))
+    server.use(http.get('http://api.test/private', () => HttpResponse.json({}, { status: 401 })))
+    const error = await captureError(apiClient.get('http://api.test/private'))
     expect(error.status).toBe(401)
     expect(error.message).toMatch(/token/i)
   })

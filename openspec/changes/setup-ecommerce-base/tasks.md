@@ -51,8 +51,8 @@
 - [x] 7.1 Crear `feature/product-catalog` desde `develop` actualizado. Verificar con `git branch --show-current`.
 - [x] 7.2 Reemplazar los tokens de `@theme` por la paleta neutra (design §13). Verificar que `npm test` sigue pasando y que el TopBar, el Sidebar y los botones se ven en tonos neutros en el navegador.
 - [x] 7.3 Implementar `lib/sortProductsByName` con `Intl.Collator('es', { sensitivity: 'base' })`, sin mutar la entrada. Verificar con tests unitarios el orden A→Z, mayúsculas, tildes y Ñ.
-- [x] 7.4 Extender el atom `Image` con `fallbackText` (placeholder neutro con la inicial en mayúscula, `role="img"` y `aria-label`). Verificar con tests de render con `src` vacío y con error de carga.
-- [x] 7.5 Crear la molecule `ProductCard` (stretched link al detalle, imagen 4:3, nombre, precio, botón "Agregar" en `z-10`, hover y `focus-within`) y el organism `ProductGrid` (grilla responsive y estado skeleton). Verificar con tests de render que el click en "Agregar" no navega y que `npm run lint` pasa.
+- [x] 7.4 Confirmar que la tarjeta no muestra imagen (los productos no tienen imagen). Verificar con tests de render que la tarjeta no tiene `role="img"`.
+- [x] 7.5 Crear la molecule `ProductCard` (stretched link al detalle, nombre, precio, botón "Agregar" en `z-10`, hover y `focus-within`) y el organism `ProductGrid` (grilla responsive y estado skeleton). Verificar con tests de render que el click en "Agregar" no navega y que `npm run lint` pasa.
 - [x] 7.6 Implementar `CatalogPage` (título "Menú principal", `useProducts` + `sortProductsByName` con `useMemo`, carga, error con reintento, vacío y `addItem` del carrito). Verificar en el navegador contra MSW.
 - [x] 7.7 Escribir `src/features/product-catalog/product-catalog.feature` (`@component`) con sus steps y agregar `product-catalog` a `TRACED_CAPABILITIES`. Verificar que `npm test` y `npm run check:traceability` pasan.
 - [x] 7.8 Escribir `tests/e2e/features/product-catalog.feature` (`@e2e`) con "Orden A a Z", "Abrir detalle", "Hover sobre el botón Agregar" y "Foco con teclado" y sus steps. Verificar que `npm run test:e2e` pasa.

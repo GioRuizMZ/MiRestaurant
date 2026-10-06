@@ -48,17 +48,6 @@ describe('atoms', () => {
     expect(screen.getByRole('img', { name: 'Hamburguesa' }).tagName).toBe('DIV')
   })
 
-  it('Image muestra la inicial en mayúscula cuando no hay URL', () => {
-    render(<Image src="" alt="hamburguesa" fallbackText="hamburguesa" />)
-    expect(screen.getByRole('img', { name: 'hamburguesa' })).toHaveTextContent('H')
-  })
-
-  it('Image muestra la inicial si la imagen falla', () => {
-    render(<Image src="https://example.test/x.png" alt="Ensalada" fallbackText="Ensalada" />)
-    fireEvent.error(screen.getByRole('img', { name: 'Ensalada' }))
-    expect(screen.getByRole('img', { name: 'Ensalada' })).toHaveTextContent('E')
-  })
-
   it('Image muestra el fondo neutro si la imagen falla', () => {
     render(<Image src="https://example.test/x.png" alt="Ensalada" />)
     fireEvent.error(screen.getByRole('img', { name: 'Ensalada' }))

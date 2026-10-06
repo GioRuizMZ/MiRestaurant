@@ -7,7 +7,7 @@ Feature: product-catalog
 
   Scenario: Abrir detalle
     Given el usuario está en el menú principal
-    When el usuario hace click sobre la imagen de la tarjeta de "Hamburguesa"
+    When el usuario hace click sobre el precio de la tarjeta de "Hamburguesa"
     Then la aplicación navega a "/products/7"
 
   Scenario: Hover sobre el botón Agregar
