@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { ApiError } from '@/api/apiError'
 import { createQueryClient, shouldRetry } from '@/app/queryClient'
 import { products } from '@/mocks/data/products'
+import { envelope, PRODUCTS_URL } from '@/mocks/handlers'
 import { server } from '@/mocks/server'
 import { resetTestState } from '@/test/resetTestState'
 import { productKeys } from './queryKeys'
@@ -43,9 +44,9 @@ describe('useProducts', () => {
   it('reutiliza la caché fresca sin una nueva petición', async () => {
     let requests = 0
     server.use(
-      http.get('*/products', () => {
+      http.get(PRODUCTS_URL, () => {
         requests += 1
-        return HttpResponse.json(products)
+        return HttpResponse.json(envelope(products))
       }),
     )
     const wrapper = wrapperFor()
@@ -71,12 +72,36 @@ describe('useProduct', () => {
     await waitFor(() => expect(result.current.isPlaceholderData).toBe(false))
   })
 
-  it('no reintenta un 404', async () => {
+  it('con el listado fresco en caché no hace una petición nueva', async () => {
     let requests = 0
     server.use(
-      http.get('*/products/:id', () => {
+      http.get(PRODUCTS_URL, () => {
         requests += 1
-        return HttpResponse.json({}, { status: 404 })
+        return HttpResponse.json(envelope(products))
+      }),
+    )
+    const queryClient = createQueryClient()
+    queryClient.setQueryData(productKeys.all, products)
+    const { result } = renderHook(() => useProduct(7), { wrapper: wrapperFor(queryClient) })
+    await waitFor(() => expect(result.current.isPlaceholderData).toBe(false))
+    expect(result.current.data?.sku).toBe('PLT-007')
+    expect(requests).toBe(0)
+  })
+
+  it('sin caché pide el listado una vez y lo deja en caché para el menú', async () => {
+    const queryClient = createQueryClient()
+    const { result } = renderHook(() => useProduct(7), { wrapper: wrapperFor(queryClient) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data?.name).toBe('Hamburguesa')
+    expect(queryClient.getQueryData(productKeys.all)).toEqual(products)
+  })
+
+  it('no reintenta cuando el producto no existe (404)', async () => {
+    let requests = 0
+    server.use(
+      http.get(PRODUCTS_URL, () => {
+        requests += 1
+        return HttpResponse.json(envelope(products))
       }),
     )
     const { result } = renderHook(() => useProduct(999), { wrapper: wrapperFor() })

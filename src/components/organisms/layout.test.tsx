@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -14,7 +14,8 @@ afterEach(resetTestState)
 const inRouter = (ui: ReactElement, path = '/') => render(<MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>)
 
 const topBarProps: TopBarProps = {
-  cartCount: 0,
+  orderCount: 0,
+  orderTotal: 0,
   searchValue: '',
   onSearchChange: vi.fn(),
   onSearchClear: vi.fn(),
@@ -53,15 +54,23 @@ describe('molecules', () => {
 })
 
 describe('TopBar', () => {
-  it('muestra el indicador del carrito recibido por props', () => {
-    inRouter(<TopBar {...topBarProps} cartCount={3} />)
-    expect(screen.getByRole('link', { name: 'Carrito, 3 unidades' })).toBeInTheDocument()
-    expect(screen.getByTestId('cart-count')).toHaveTextContent('3')
+  it('muestra el resumen del pedido recibido por props como enlace a /pedido', () => {
+    inRouter(<TopBar {...topBarProps} orderCount={3} orderTotal={33} />)
+    const summary = screen.getByRole('link', { name: 'Ver pedido: 3 productos, $33.00' })
+    expect(summary).toHaveAttribute('href', '/pedido')
+    expect(screen.getByTestId('order-count')).toHaveTextContent('3 productos')
+    expect(screen.getByTestId('order-total')).toHaveTextContent('$33.00')
   })
 
-  it('no muestra indicador con el carrito vacío', () => {
+  it('con el pedido vacío muestra 0 productos y $0.00', () => {
     inRouter(<TopBar {...topBarProps} />)
-    expect(screen.queryByTestId('cart-count')).not.toBeInTheDocument()
+    expect(screen.getByTestId('order-count')).toHaveTextContent('0 productos')
+    expect(screen.getByTestId('order-total')).toHaveTextContent('$0.00')
+  })
+
+  it('usa singular con 1 producto', () => {
+    inRouter(<TopBar {...topBarProps} orderCount={1} orderTotal={12.5} />)
+    expect(screen.getByTestId('order-count')).toHaveTextContent('1 producto')
   })
 
   it('el botón de menú refleja y alterna el estado del sidebar', () => {
@@ -75,21 +84,33 @@ describe('TopBar', () => {
 })
 
 describe('Sidebar', () => {
-  it('resalta el enlace de la ruta activa', () => {
-    inRouter(<Sidebar open overlay={false} onClose={vi.fn()} />, '/cart')
-    expect(screen.getByRole('link', { name: 'Carrito' })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('link', { name: 'Catálogo' })).not.toHaveAttribute('aria-current')
+  it('solo tiene el enlace "Menú" y lo resalta en el menú principal', () => {
+    inRouter(<Sidebar open overlay={false} onClose={vi.fn()} />, '/')
+    const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
+    expect(within(nav).getAllByRole('link')).toHaveLength(1)
+    expect(within(nav).getByRole('link', { name: 'Menú' })).toHaveAttribute('aria-current', 'page')
+    expect(within(nav).queryByRole('link', { name: 'Pedido' })).not.toBeInTheDocument()
   })
 
-  it('se oculta cuando está colapsado', () => {
-    inRouter(<Sidebar open={false} overlay={false} onClose={vi.fn()} />)
+  it('cerrado queda inerte y oculto para lectores de pantalla', () => {
+    const { container } = inRouter(<Sidebar open={false} overlay={false} onClose={vi.fn()} />)
     expect(screen.queryByRole('navigation', { name: 'Navegación principal' })).not.toBeInTheDocument()
+    const aside = container.querySelector('#app-sidebar')!
+    expect(aside).toHaveAttribute('inert')
+    expect(aside).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('anima el cambio con una transición de 200 ms', () => {
+    const { container } = inRouter(<Sidebar open overlay onClose={vi.fn()} />)
+    const aside = container.querySelector('#app-sidebar')!
+    expect(aside.className).toContain('duration-200')
+    expect(aside.className).toContain('translate-x-0')
   })
 
   it('en modo superpuesto se cierra al navegar', () => {
     const onClose = vi.fn()
     inRouter(<Sidebar open overlay onClose={onClose} />)
-    fireEvent.click(screen.getByRole('link', { name: 'Carrito' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Menú' }))
     expect(onClose).toHaveBeenCalled()
   })
 })

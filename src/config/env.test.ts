@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { readEnv } from './env'
 
 describe('readEnv', () => {
-  it('devuelve la configuración normalizada', () => {
-    expect(readEnv({ VITE_API_URL: 'https://api.test/', VITE_API_TOKEN: ' abc ' })).toEqual({
-      apiUrl: 'https://api.test',
+  it('usa la URL absoluta tal cual, solo sin espacios', () => {
+    expect(readEnv({ VITE_API_URL: ' https://api.test/GetProducts?KioskID=8 ', VITE_API_TOKEN: ' abc ' })).toEqual({
+      apiUrl: 'https://api.test/GetProducts?KioskID=8',
       apiToken: 'abc',
     })
   })

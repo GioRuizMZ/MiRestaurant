@@ -1,16 +1,36 @@
+import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it } from 'vitest'
 import { products } from '@/mocks/data/products'
+import { envelope, PRODUCTS_URL } from '@/mocks/handlers'
+import { server } from '@/mocks/server'
 import { resetTestState } from '@/test/resetTestState'
-import { getProduct, getProducts, toProduct } from './productService'
+import { findProductById, getProduct, getProducts, toProduct } from './productService'
 
 afterEach(resetTestState)
 
 describe('productService', () => {
-  it('obtiene el listado de productos', async () => {
+  it('pide los productos exactamente a VITE_API_URL, sin agregar rutas', async () => {
+    let requestedUrl = ''
+    server.use(
+      http.get(PRODUCTS_URL, ({ request }) => {
+        requestedUrl = request.url
+        return HttpResponse.json(envelope([]))
+      }),
+    )
+    await getProducts()
+    expect(requestedUrl).toBe('http://api.test/SrKioscoRemote/GetProducts?KioskID=8')
+  })
+
+  it('obtiene el listado desde data aunque isSuccess sea false', async () => {
     await expect(getProducts()).resolves.toEqual(products)
   })
 
-  it('obtiene un producto por id', async () => {
+  it('devuelve una lista vacía si data es null', async () => {
+    server.use(http.get(PRODUCTS_URL, () => HttpResponse.json({ ...envelope([]), data: null })))
+    await expect(getProducts()).resolves.toEqual([])
+  })
+
+  it('obtiene un producto por id desde la lista', async () => {
     await expect(getProduct(7)).resolves.toMatchObject({ id: 7, name: 'Hamburguesa' })
   })
 
@@ -18,13 +38,43 @@ describe('productService', () => {
     await expect(getProduct(999)).rejects.toMatchObject({ status: 404 })
   })
 
-  it('mapea respuestas con nombres alternativos y tipos en texto', () => {
-    expect(toProduct({ id: '3', title: 'Té', price: '2.5' })).toEqual({
+  it('mapea la respuesta real de la API a Product', () => {
+    expect(
+      toProduct({
+        id: 717,
+        sku: 'PIBE',
+        name: 'Pistacho Beat',
+        description: 'Croissant ultra crujiente',
+        image: 'https://srkiosco.blob.core.windows.net/prd/product-images/ic_image_717.png',
+        price: '85.0000',
+      }),
+    ).toEqual({
+      id: 717,
+      sku: 'PIBE',
+      name: 'Pistacho Beat',
+      description: 'Croissant ultra crujiente',
+      price: 85,
+      image: 'https://srkiosco.blob.core.windows.net/prd/product-images/ic_image_717.png',
+    })
+  })
+
+  it('tolera campos nulos', () => {
+    expect(toProduct({ id: '3', sku: null, name: null, description: null, image: null, price: 2.5 })).toEqual({
       id: 3,
-      name: 'Té',
+      sku: '',
+      name: '',
       description: '',
       price: 2.5,
-      sku: '',
+      image: '',
     })
+  })
+
+  it('trata una imagen en blanco como sin imagen', () => {
+    expect(toProduct({ id: 3, image: '   ', price: 1 }).image).toBe('')
+  })
+
+  it('findProductById busca en el listado y lanza 404 si no está', () => {
+    expect(findProductById(products, 7).name).toBe('Hamburguesa')
+    expect(() => findProductById(products, 999)).toThrow(expect.objectContaining({ status: 404 }))
   })
 })

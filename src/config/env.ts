@@ -14,7 +14,8 @@ export function readEnv(source: Record<string, unknown>): AppEnv {
     }
   }
   return {
-    apiUrl: String(source.VITE_API_URL).trim().replace(/\/+$/, ''),
+    // URL absoluta del endpoint: se usa tal cual, sin agregar ni quitar nada.
+    apiUrl: String(source.VITE_API_URL).trim(),
     apiToken: String(source.VITE_API_TOKEN).trim(),
   }
 }
