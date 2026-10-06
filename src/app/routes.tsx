@@ -1,8 +1,8 @@
 import type { RouteObject } from 'react-router'
 import { AppLayoutContainer } from '@/layouts/AppLayoutContainer'
-import { CartPage } from '@/pages/CartPage'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { OrderPage } from '@/pages/OrderPage'
 import { ProductDetailPage } from '@/pages/ProductDetailPage'
 
 export const routes: RouteObject[] = [
@@ -12,7 +12,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <CatalogPage /> },
       { path: 'producto/:id', element: <ProductDetailPage /> },
-      { path: 'cart', element: <CartPage /> },
+      { path: 'pedido', element: <OrderPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

@@ -1,8 +1,6 @@
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber'
 import { act, screen, within } from '@testing-library/react'
 import { expect } from 'vitest'
-import { products } from '@/mocks/data/products'
-import { useCartStore } from '@/store/cartStore'
 import { resetUiStore } from '@/store/uiStore'
 import { renderApp } from '@/test/renderApp'
 import { resetTestState } from '@/test/resetTestState'
@@ -43,36 +41,26 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     })
   })
 
-  Scenario('Indicador del carrito', ({ Given, When, Then }) => {
-    Given('el carrito tiene 3 unidades en total', () => {
-      useCartStore.getState().addItem(products[0], 2)
-      useCartStore.getState().addItem(products[2], 1)
-    })
-    When('se muestra la barra superior', () => {
-      app = renderApp('/')
-    })
-    Then('el acceso al carrito muestra el indicador "3"', () => {
-      const cartLink = within(topBar()).getByRole('link', { name: /carrito/i })
-      expect(within(cartLink).getByTestId('cart-count')).toHaveTextContent('3')
-    })
-  })
+  Scenario('Acceso al pedido', ({ Given, When, Then }) => {
+    let topBarBefore: HTMLElement
 
-  Scenario('Carrito vacío', ({ Given, When, Then }) => {
-    Given('el carrito está vacío', () => {
-      expect(useCartStore.getState().items).toEqual([])
-    })
-    When('se muestra la barra superior', () => {
+    Given('el usuario está en el menú principal', () => {
       app = renderApp('/')
+      topBarBefore = topBar()
     })
-    Then('el acceso al carrito no muestra indicador numérico', () => {
-      expect(within(topBar()).getByRole('link', { name: 'Carrito vacío' })).toBeInTheDocument()
-      expect(screen.queryByTestId('cart-count')).not.toBeInTheDocument()
+    When('pulsa el resumen del pedido en la barra superior', async () => {
+      await app.user.click(within(topBar()).getByRole('link', { name: /^Ver pedido/ }))
+    })
+    Then('la aplicación navega a "/pedido" dentro del mismo layout', () => {
+      expect(app.router.state.location.pathname).toBe('/pedido')
+      expect(topBar()).toBe(topBarBefore)
+      expect(within(mainArea()).queryByText('Página no encontrada')).not.toBeInTheDocument()
     })
   })
 
   Scenario('Volver al inicio', ({ Given, When, Then }) => {
-    Given('el usuario está en el carrito', () => {
-      app = renderApp('/cart')
+    Given('el usuario está en el pedido', () => {
+      app = renderApp('/pedido')
     })
     When('el usuario hace click en el logo', async () => {
       await app.user.click(screen.getByRole('link', { name: 'MiRestaurant, ir al catálogo' }))
@@ -89,8 +77,8 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     Then('el enlace "Menú" de la barra lateral aparece resaltado', () => {
       expect(within(sidebarNav()!).getByRole('link', { name: 'Menú' })).toHaveAttribute('aria-current', 'page')
     })
-    And('la barra lateral no tiene un enlace "Carrito"', () => {
-      expect(within(sidebarNav()!).queryByRole('link', { name: /carrito/i })).not.toBeInTheDocument()
+    And('la barra lateral no tiene un enlace "Pedido"', () => {
+      expect(within(sidebarNav()!).queryByRole('link', { name: /pedido/i })).not.toBeInTheDocument()
     })
   })
 
@@ -112,10 +100,10 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   })
 
   Scenario('Móvil', ({ Given, When, Then }) => {
-    Given('el viewport mide 375 px y el usuario está en el carrito', () => {
+    Given('el viewport mide 375 px y el usuario está en el pedido', () => {
       setViewportWidth(375)
       resetUiStore()
-      app = renderApp('/cart')
+      app = renderApp('/pedido')
       expect(sidebarNav()).not.toBeInTheDocument()
     })
     When('el usuario abre el menú y elige "Menú"', async () => {

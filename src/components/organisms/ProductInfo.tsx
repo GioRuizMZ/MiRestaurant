@@ -12,13 +12,13 @@ export interface ProductInfoProps {
   quantity: number
   onQuantityChange: (quantity: number) => void
   onAdd: () => void
-  /** Aviso tras agregar al carrito. Vacío si no hay nada que anunciar. */
+  /** Aviso tras agregar al pedido. Vacío si no hay nada que anunciar. */
   addedMessage?: string
 }
 
 const LAYOUT = 'grid gap-8 md:grid-cols-2 md:items-start md:gap-12'
 
-/** Información completa de un producto (imagen, nombre, SKU, precio y descripción) y agregar al carrito. */
+/** Información completa de un producto (imagen, nombre, SKU, precio y descripción) y agregar al pedido. */
 export function ProductInfo({ product, quantity, onQuantityChange, onAdd, addedMessage = '' }: ProductInfoProps) {
   const titleId = useId()
 
@@ -50,7 +50,7 @@ export function ProductInfo({ product, quantity, onQuantityChange, onAdd, addedM
             <QuantitySelector value={quantity} onChange={onQuantityChange} />
             <Button size="lg" onClick={onAdd} className="flex-1 sm:flex-none">
               <Icon name="cart" />
-              Agregar al carrito
+              Agregar al pedido
             </Button>
           </div>
           <p role="status" className="min-h-5 text-sm font-medium text-success">

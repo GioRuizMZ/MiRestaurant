@@ -32,7 +32,7 @@ describe('ProductInfo', () => {
     expect(screen.getByText('Este producto no tiene descripción.')).toBeInTheDocument()
   })
 
-  it('el contador y "Agregar al carrito" avisan a quien los usa', () => {
+  it('el contador y "Agregar al pedido" avisan a quien los usa', () => {
     const onQuantityChange = vi.fn()
     const onAdd = vi.fn()
     render(
@@ -41,14 +41,14 @@ describe('ProductInfo', () => {
         quantity={2}
         onQuantityChange={onQuantityChange}
         onAdd={onAdd}
-        addedMessage="Agregado al carrito: 2 × Hamburguesa"
+        addedMessage="Agregado al pedido: 2 × Hamburguesa"
       />,
     )
     fireEvent.click(screen.getByRole('button', { name: 'Aumentar cantidad' }))
     expect(onQuantityChange).toHaveBeenCalledWith(3)
-    fireEvent.click(screen.getByRole('button', { name: 'Agregar al carrito' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Agregar al pedido' }))
     expect(onAdd).toHaveBeenCalledOnce()
-    expect(screen.getByRole('status')).toHaveTextContent('Agregado al carrito: 2 × Hamburguesa')
+    expect(screen.getByRole('status')).toHaveTextContent('Agregado al pedido: 2 × Hamburguesa')
   })
 
   it('el skeleton anuncia la carga', () => {

@@ -12,7 +12,7 @@ describe('cartStore', () => {
   it('crea una línea al agregar un producto nuevo', () => {
     cart().addItem(hamburguesa)
     expect(cart().items).toEqual([
-      { id: 7, name: 'Hamburguesa', price: 12.5, sku: hamburguesa.sku, quantity: 1 },
+      { id: 7, name: 'Hamburguesa', price: 12.5, sku: hamburguesa.sku, image: hamburguesa.image, quantity: 1 },
     ])
   })
 
@@ -47,6 +47,13 @@ describe('cartStore', () => {
   })
 
   it('restaura el carrito persistido al rehidratar', async () => {
+    const line = { id: 7, name: 'Hamburguesa', sku: 'PLT-007', image: '/img/7.png', price: 12.5, quantity: 2 }
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({ state: { items: [line] }, version: 2 }))
+    await useCartStore.persist.rehydrate()
+    expect(cart().items).toEqual([line])
+  })
+
+  it('migra un pedido de la versión 1 (sin imagen) sin perder líneas', async () => {
     localStorage.setItem(
       CART_STORAGE_KEY,
       JSON.stringify({
@@ -55,7 +62,9 @@ describe('cartStore', () => {
       }),
     )
     await useCartStore.persist.rehydrate()
-    expect(cart().items).toEqual([{ id: 7, name: 'Hamburguesa', sku: 'PLT-007', price: 12.5, quantity: 2 }])
+    expect(cart().items).toEqual([
+      { id: 7, name: 'Hamburguesa', sku: 'PLT-007', image: '', price: 12.5, quantity: 2 },
+    ])
   })
 
   it('arranca vacío si los datos persistidos están corruptos', async () => {

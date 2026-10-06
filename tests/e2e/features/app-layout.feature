@@ -3,8 +3,8 @@ Feature: app-layout
 
   Scenario: Navegar entre pantallas
     Given el usuario está en el catálogo
-    When abre el carrito desde la barra superior
-    Then el área de contenido muestra el carrito
+    When abre el pedido desde la barra superior
+    Then el área de contenido muestra el pedido
     And la barra superior y la barra lateral siguen visibles
 
   Scenario: Ruta inexistente

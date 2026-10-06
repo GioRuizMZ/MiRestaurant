@@ -1,9 +1,14 @@
 import { useMemo } from 'react'
 import { useCartStore } from '@/store/cartStore'
 
-/** Total de unidades del carrito. Solo vuelve a renderizar cuando cambia el número. */
-export function useCartCount(): number {
-  return useCartStore((state) => state.items.reduce((total, item) => total + item.quantity, 0))
+/**
+ * Resumen del pedido para el encabezado: total de unidades y monto total.
+ * Dos selectores de valores primitivos: solo vuelve a renderizar cuando cambia alguno de los dos números.
+ */
+export function useOrderSummary(): { count: number; total: number } {
+  const count = useCartStore((state) => state.items.reduce((sum, item) => sum + item.quantity, 0))
+  const total = useCartStore((state) => state.items.reduce((sum, item) => sum + item.price * item.quantity, 0))
+  return { count, total }
 }
 
 /** Solo la acción de agregar: no vuelve a renderizar cuando cambia el contenido del carrito. */

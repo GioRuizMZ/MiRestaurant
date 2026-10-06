@@ -1,6 +1,6 @@
 @component
 Feature: product-catalog
-  Menú principal: productos con imagen ordenados de la A a la Z, con acceso al detalle y al carrito.
+  Menú principal: productos con imagen ordenados de la A a la Z, con acceso al detalle y al pedido.
   Los escenarios de hover y foco se ejecutan en el nivel @e2e.
 
   Scenario: Menú con productos
@@ -47,7 +47,7 @@ Feature: product-catalog
     Then la aplicación navega a "/producto/7"
 
   Scenario: Agregar desde la tarjeta
-    Given el carrito está vacío
+    Given el pedido está vacío
     When el usuario pulsa "Agregar" en la tarjeta de "Hamburguesa"
-    Then el carrito tiene 1 unidad de "Hamburguesa" y el indicador de la barra superior muestra "1"
+    Then el pedido tiene 1 unidad de "Hamburguesa" y el encabezado muestra "1 producto" y "$12.50"
     And el usuario sigue en la pantalla principal

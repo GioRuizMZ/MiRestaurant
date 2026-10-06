@@ -75,15 +75,15 @@ MiRestaurant/
 |   |   +-- normalizeText.ts     # minusculas + sin tildes
 |   +-- components/              # SOLO presentacion (sin api/store/hooks de datos)
 |   |   +-- atoms/               # Button, IconButton, Input, Badge, Price, Image, Skeleton, Spinner
-|   |   +-- molecules/           # SearchBar, ProductCard, QuantitySelector, CartLine, EmptyState, ErrorState, NavItem
-|   |   +-- organisms/           # TopBar, Sidebar, ProductGrid, ProductInfo, CartSummary, CartList
+|   |   +-- molecules/           # SearchBar, ProductCard, QuantitySelector, BackLink, OrderLine, EmptyState, ErrorState, NavItem
+|   |   +-- organisms/           # TopBar, Sidebar, ProductGrid, ProductInfo, OrderList, OrderSummary
 |   |   +-- templates/           # AppLayout (TopBar + Sidebar + slot de contenido)
 |   +-- layouts/
 |   |   +-- AppLayoutContainer.tsx  # lee stores/hooks -> props de AppLayout, renderiza <Outlet/>
 |   +-- pages/
 |   |   +-- CatalogPage.tsx
 |   |   +-- ProductDetailPage.tsx
-|   |   +-- CartPage.tsx
+|   |   +-- OrderPage.tsx        # /pedido
 |   |   +-- NotFoundPage.tsx
 |   +-- mocks/
 |   |   +-- data/products.ts     # fixtures compartidos
@@ -145,16 +145,16 @@ Regla de ESLint (`no-restricted-imports`) aplicada a `src/components/**`: prohí
 ### 6. Búsqueda
 
 - `searchStore.term` es el texto que escribe el usuario. El input es controlado y se actualiza con cada tecla.
-- `useProductSearch(products)`: aplica `useDebouncedValue(term, 300)`, luego `trim`, y si `length > 3` filtra con `normalizeText` sobre `name + category`. Si no, devuelve todos los productos.
+- `useProductSearch(products)`: aplica `useDebouncedValue(term, 250)`, luego `trim`, y si `length > 3` filtra con `normalizeText(name).includes(normalizeText(term))`. Si no, devuelve todos los productos. Ver §16.
 - Por qué se filtra en el cliente: el catálogo de un restaurante es chico y ya está en caché, así que filtrar en el cliente no agrega peticiones. Si después la API ofrece búsqueda, solo cambia el hook: pasaría a ser `useQuery(['products', 'search', term])`, sin tocar los componentes.
 - Si se escribe fuera de `/`, `AppLayoutContainer` navega a `/` cuando el término supera el umbral (ver el escenario "Buscar desde otra pantalla").
 - El término no se persiste: se pierde al recargar y se conserva al navegar.
 
-### 7. Carrito
+### 7. Carrito (en la interfaz, "pedido")
 
-- `cartStore`: `items: CartItem[]` con `{ id, sku, name, price, quantity }`. Acciones: `addItem(product, qty = 1)` (si el id ya existe, suma), `increment(id)`, `decrement(id)` (si llega a 0, quita la línea), `removeItem(id)` y `clear()`.
+- `cartStore`: `items: CartItem[]` con `{ id, sku, name, image, price, quantity }` (`image` se suma en la feature 3, ver §15). Acciones: `addItem(product, qty = 1)` (si el id ya existe, suma), `increment(id)`, `decrement(id)` (si llega a 0, quita la línea), `removeItem(id)` y `clear()`.
 - Los valores derivados (`totalItems`, `totalPrice`, `subtotal`) se calculan en `useCart` con selectores, no se guardan en el store.
-- `persist` usa la clave `mirestaurant-cart` con `version: 1` y una función `migrate`. Si el JSON está corrupto, se arranca con el carrito vacío.
+- `persist` usa la clave `mirestaurant-cart` con `version: 2` (la 2 agrega `image`) y una función `migrate`. Si el JSON está corrupto, se arranca con el carrito vacío.
 - El precio guardado en la línea es una decisión de la spec: el carrito no depende de la API.
 
 ### 8. Layout y rutas
@@ -164,13 +164,13 @@ createBrowserRouter([
   { element: <AppLayoutContainer/>, errorElement: <NotFoundPage/>, children: [
       { path: '/',             element: <CatalogPage/> },
       { path: '/producto/:id', element: <ProductDetailPage/> },
-      { path: '/cart',         element: <CartPage/> },
+      { path: '/pedido',       element: <OrderPage/> },
       { path: '*',             element: <NotFoundPage/> },
   ]}
 ])
 ```
 
-`AppLayout` (template) recibe `cartCount`, `searchValue`, `onSearchChange`, `sidebarOpen`, `onToggleSidebar` y `children`, y no sabe nada de los stores. Breakpoint `md` (768 px): por debajo, el sidebar es un drawer superpuesto que se cierra con cada cambio de `location`.
+`AppLayout` (template) recibe `orderCount`, `orderTotal`, `searchValue`, `onSearchChange`, `sidebarOpen`, `onToggleSidebar` y `children`, y no sabe nada de los stores. Breakpoint `md` (768 px): por debajo, el sidebar es un drawer superpuesto que se cierra con cada cambio de `location`.
 
 ### 9. Contrato de la API (SrKiosco)
 
@@ -193,7 +193,7 @@ Product    = { id: number; sku: string; name: string; description: string; price
 ### 10. BDD en dos niveles
 
 - **@component**: `src/features/<capacidad>/<capacidad>.feature` + `*.steps.tsx` con `@amiceli/vitest-cucumber` (`loadFeature` / `describeFeature`). Usa `renderWithProviders` con un `QueryClient` nuevo por escenario (con `retry: false`), MSW con `server.use()` para los casos de error, y reinicia los stores en `beforeEach`.
-- **@e2e**: `tests/e2e/features/*.feature` con `playwright-bdd` (`defineBddConfig`). La app se levanta con `vite --mode e2e`, que activa el worker de MSW con los mismos `handlers.ts`. Escenario mínimo: buscar "Hamb" → abrir detalle → agregar 2 → indicador "2" → `/cart` con total correcto.
+- **@e2e**: `tests/e2e/features/*.feature` con `playwright-bdd` (`defineBddConfig`). La app se levanta con `vite --mode e2e`, que activa el worker de MSW con los mismos `handlers.ts`. Escenario mínimo: buscar "Hamb" → abrir detalle → agregar 2 al pedido → encabezado "2 productos" y "$25.00" → `/pedido` con total correcto.
 - Los nombres de `Feature` y `Scenario` copian literalmente los de las specs. El script `check:traceability` (un script de Node) compara los encabezados `#### Scenario:` de `openspec/specs/**` con los `Scenario:` de los `.feature` y falla si falta alguno.
 - **Alcance de la trazabilidad**: el script revisa solo las capacidades de comportamiento de la UI (`app-layout`, `product-catalog`, `product-search`, `product-detail`, `shopping-cart`), definidas en una lista dentro del script. Las capacidades de estándar (`api-client`, `server-state`, `global-state`, `component-architecture`, `testing-bdd`) se verifican con tests unitarios y con el lint. `git-workflow` se verifica con la protección de ramas de GitHub y con la revisión de los PRs.
 - **La lista crece con cada rama**: en la base solo incluye `app-layout`. Cada rama `feature/*` agrega su capacidad a la lista en el mismo PR que trae sus `.feature`. Así `verify` pasa en cada punto de la historia y ninguna feature puede integrarse sin todos sus escenarios.
@@ -224,8 +224,8 @@ feature/shopping-cart                              *-*
 
 - **Base en `main`**: el primer commit incluye `openspec/` (con este cambio), el tooling, la infraestructura de pruebas, el cliente API, los stores, los atoms, el layout, las rutas con páginas vacías y `NotFoundPage`. Es decir, los grupos 1 a 5 de tasks.md. Ese commit no incluye ninguna de las features.
 - `develop` se crea desde ese commit y se publica en `origin`.
-- **Una rama por feature**, en este orden: `feature/product-catalog` → `feature/product-search` → `feature/product-detail` → `feature/shopping-cart`. El orden importa: la búsqueda filtra el catálogo y el carrito integra los botones "Agregar" del catálogo y del detalle. Cada rama se crea desde `develop` actualizado, después de integrar la anterior.
-- **Agregar desde el catálogo y el detalle**: como el `cartStore` ya existe en la base, los botones "Agregar" de las features 1 y 2 funcionan desde el primer momento. La feature del carrito agrega la página `/cart`, la gestión de líneas y el escenario E2E del flujo completo.
+- **Una rama por feature**. El orden real quedó así: `feature/product-catalog` → `feature/product-detail` → `feature/shopping-cart` → `feature/product-search`. El detalle no dependía de la búsqueda, y la búsqueda (punto extra del enunciado) va al final, junto con el escenario E2E del flujo completo, que la necesita. Cada rama se crea desde `develop` actualizado, después de integrar la anterior.
+- **Agregar desde el catálogo y el detalle**: como el `cartStore` ya existe en la base, los botones "Agregar" de las features 1 y 2 funcionan desde el primer momento. La feature del pedido agrega el resumen del encabezado, la página `/pedido` y la gestión de líneas.
 - **PR a `develop`** al terminar cada feature, creado con `gh pr create --base develop`. El cuerpo del PR enlaza `openspec/changes/setup-ecommerce-base` y lista las capacidades y los escenarios cubiertos. Para hacer merge, `npm run verify` tiene que pasar en la rama. Después del merge se borra la rama remota.
 - **Release**: con las cuatro features en `develop`, se abre un PR de `develop` a `main`.
 - **Protección de ramas en GitHub** para `main` y `develop`: requerir PR, bloquear push directo y force-push. Si se agrega un workflow de CI más adelante, se suma como check obligatorio el job de `verify`.
@@ -289,8 +289,8 @@ feature/shopping-cart                              *-*
 | |   (fondo neutro si      |                                  |
 | |    falta o no carga)    |   Descripcion                    |
 | +-------------------------+   Hamburguesa de res a la ...    |
-|                               [-] 1 [+]  [Agregar al carrito]|
-|                               Agregado al carrito: 1 × ...   |
+|                               [-] 1 [+]  [Agregar al pedido] |
+|                               Agregado al pedido: 1 × ...    |
 +--------------------------------------------------------------+
   movil: una columna (imagen arriba). md+: dos columnas.
 ```
@@ -317,7 +317,7 @@ feature/shopping-cart                              *-*
 - "Volver al menú principal" es un `<Link to="/">` con estilo de botón y el ícono `arrow-left`. Es un enlace y no un `<button>` porque navega: se puede abrir en otra pestaña y el lector de pantalla lo anuncia como enlace. Va arriba del contenido y también en los estados de "no encontrado" y de error.
 - `ProductDetailPage` (page): lee el id, llama a `useProduct` y elige entre skeleton, error con "Reintentar", "Producto no encontrado" o `ProductInfo`. No tiene marcado propio de la información del producto.
 - Molecule `QuantitySelector` (presentación): `value`, `min`, `max` y `onChange`. Pinta los botones "Disminuir cantidad" y "Aumentar cantidad" (`IconButton` con `minus` y `plus`), que se deshabilitan en los límites, y el valor con `aria-live="polite"`. El estado de la cantidad vive en la page, no en el store: es un dato de la pantalla.
-- `ProductInfo` recibe la cantidad, `onQuantityChange`, `onAdd` y `addedMessage` por props, y pinta el contador y el botón "Agregar al carrito" (variante `primary`, ícono `cart`) debajo de la descripción. El aviso va en un `role="status"` para que el lector de pantalla lo anuncie.
+- `ProductInfo` recibe la cantidad, `onQuantityChange`, `onAdd` y `addedMessage` por props, y pinta el contador y el botón "Agregar al pedido" (variante `primary`, ícono `cart`; antes "Agregar al carrito", ver §15) debajo de la descripción. El aviso va en un `role="status"` para que el lector de pantalla lo anuncie.
 - `ProductDetailPage` llama a `useAddToCart()` con `addItem(product, quantity)`. El store ya suma a la línea existente. Después vuelve la cantidad a 1 y guarda el texto del aviso. El aviso se borra al cambiar la cantidad o de producto. No hay un toast global: el aviso aparece junto al botón, donde el usuario está mirando.
 - Máximo 99 unidades por agregado: evita cantidades accidentales y mantiene el contador angosto.
 - Quedan fuera de esta feature la categoría y conservar la búsqueda al volver.
@@ -327,9 +327,81 @@ feature/shopping-cart                              *-*
 
 **Nivel de cada escenario**
 - `@component`: todos menos "Recargar la página".
-- `@e2e`: "Recargar la página", "Ver detalle", "Volver al menú principal" y "Agregar varias unidades", para cubrir la URL real, la imagen cargada y el indicador del carrito en el navegador.
+- `@e2e`: "Recargar la página", "Ver detalle", "Volver al menú principal" y "Agregar varias unidades", para cubrir la URL real, la imagen cargada y el resumen del pedido en el navegador.
+
+### 15. Feature 3: Pedido
+
+```
++-----------------------------------------------------------------------+
+| [=] MiRestaurant  [ Buscar productos...      ]  [(cart) 3 productos   |
+|                                                         $33.00     ]  | <- enlace a /pedido
++-----------------------------------------------------------------------+
+  movil: [(cart)3] $33.00  (el numero va en un badge sobre el icono)
+
+/pedido
++--------------------------------------------------------------+
+| [<- Volver al menu principal]                                |
+| Tu pedido                                                    |
+| +--------------------------------------+  +----------------+ |
+| | [img] Hamburguesa     $12.50 c/u     |  | 3 productos    | |
+| |       [-] 2 [+]   $25.00   [Quitar]  |  | Total  $33.00  | |
+| | [img] Ensalada        $8.00 c/u      |  |                | |
+| |       [-] 1 [+]   $8.00    [Quitar]  |  | [Vaciar pedido]| |
+| +--------------------------------------+  +----------------+ |
++--------------------------------------------------------------+
+  movil: una columna, el resumen debajo de las lineas
+```
+
+**"Pedido" en la interfaz, `cart` en el código**
+- Todo el texto visible dice "pedido": el botón "Agregar al pedido" del detalle, el aviso "Agregado al pedido: 3 × Hamburguesa", la ruta `/pedido`, el título "Tu pedido" y "Vaciar pedido".
+- En el código se mantienen `cartStore`, `useCart` y `CartItem`. Renombrarlos tocaría el store, su clave de `localStorage` y todos los tests sin cambiar nada visible. Los componentes y la página nuevos sí usan "Order" (`OrderPage`, `OrderLine`, `OrderList`, `OrderSummary`), porque nombran pantallas del dominio.
+- La ruta `/cart` desaparece y cae en `NotFoundPage`. No hace falta redirigir porque la app no se publicó.
+
+**Resumen en el encabezado**
+- `useCart.ts` agrega `useOrderSummary()`, que devuelve `{ count, total }` con dos selectores de valores primitivos (`reduce` sobre `items`). Así el encabezado solo se vuelve a renderizar cuando cambia alguno de los dos números. Reemplaza a `useCartCount()`.
+- `AppLayoutContainer` pasa `orderCount` y `orderTotal` al template. `TopBar` (presentación) pinta un `<Link to="/pedido">` con el ícono, "N producto(s)" (`data-testid="order-count"`) y el monto con `formatPrice` (`data-testid="order-total"`). El `aria-label` es "Ver pedido: 3 productos, $33.00".
+- Se ve siempre, también con el pedido vacío ("0 productos", "$0.00"). Así el usuario sabe dónde va a aparecer lo que agregue. Esto reemplaza al badge que antes se ocultaba con el carrito vacío.
+- En móvil, el texto "productos" se oculta (`sm:inline`): el número va en un badge sobre el ícono, al lado del monto, para que el resumen quepa junto al buscador.
+- Pluralización: una función `formatProductCount(n)` en `lib/` devuelve "1 producto" o "N productos". La usan el encabezado y la página.
+
+**Imagen en las líneas**
+- `CartItem` agrega `image`, y `addItem` la copia del producto, igual que el nombre y el precio ("Datos guardados al agregar").
+- `persist` pasa a `version: 2`. `sanitizeItems` acepta líneas sin `image` (guardadas con la versión 1) y les pone `''`. Así un pedido ya guardado no se pierde al actualizar la app, y la línea muestra el fondo neutro del atom `Image`.
+
+**Pantalla `/pedido`**
+- Molecule `OrderLine`: imagen (decorativa, 64 px), nombre, precio unitario "c/u", `QuantitySelector`, subtotal y botón "Quitar". `QuantitySelector` suma la prop `itemLabel`, así los botones de cada línea tienen un nombre único ("Aumentar cantidad de Ensalada"), y en esta pantalla se usa con `min={0}`: disminuir desde 1 llama a `decrement`, que quita la línea.
+- Organism `OrderList`: lista (`<ul aria-label="Líneas del pedido">`) de `OrderLine`.
+- Organism `OrderSummary`: total de productos, monto total y "Vaciar pedido". La confirmación es en línea ("¿Vaciar el pedido?" con "Sí, vaciar" y "Cancelar"), con estado local del organism. Se descartó `window.confirm`: bloquea la página, no se puede estilizar y complica las pruebas.
+- `OrderPage` (page): usa `useCart()` y pasa líneas, totales y acciones como props. Con el pedido vacío muestra `EmptyState` con "Tu pedido está vacío" y el enlace "Ver el menú". Arriba, `BackLink` "Volver al menú principal".
+- El pedido no pide nada a la API: se pinta solo con el store ("Pedido sin conexión a la API").
+
+**Se mantiene al navegar**
+- Ya pasa con Zustand: el store vive fuera del árbol de rutas, así que cambiar de pantalla no lo reinicia. Además `persist` lo conserva al recargar (spec `global-state`). El escenario "Navegar sin perder el pedido" lo comprueba con el router en memoria, sin recargar.
+
+**Nivel de cada escenario**
+- `@component`: todos los de `shopping-cart`.
+- `@e2e`: "Resumen en el menú y en el detalle" y "Navegar sin perder el pedido", con navegación real en el navegador.
+
+### 16. Búsqueda (punto extra)
+
+Se mantiene la spec `product-search` existente (buscador en la barra superior, umbral de 4 caracteres, navegación al menú desde otras pantallas), con dos ajustes:
+
+- **Solo por nombre**. La API envía `category` como un id numérico sin nombre, así que no hay texto de categoría con el que comparar. Se reemplazó el escenario "Coincidencia por categoría" por "Coincidencia en medio del nombre". Si más adelante la API envía el nombre de la categoría, se agrega al texto que compara `useProductSearch`, sin cambiar los componentes.
+- **Debounce de 250 ms**. El escenario "Escritura continua" pide el resultado en menos de 300 ms después de dejar de escribir. Con 250 ms queda margen para el render.
+
+**Flujo**
+- `CatalogPage` aplica primero `useProductSearch(data)` y después `sortProductsByName`, así los resultados también quedan de la A a la Z.
+- Sin coincidencias: `EmptyState` con 'No encontramos productos para "<término>"' y el botón "Limpiar búsqueda", que llama a `searchStore.clear()`.
+- El contador "N productos" del título refleja los resultados filtrados.
+- Buscar desde otra pantalla: `AppLayoutContainer` observa el término. Si, sin espacios, tiene más de 3 caracteres y la ruta no es `/`, navega a `/` con `navigate('/')`. Usa el término sin debounce para que la navegación sea inmediata. El filtrado igual espera el debounce.
+- Los tests del debounce usan `vi.useFakeTimers` y el `advanceTimers` de `renderApp`, que ya existe.
+
+**Flujo E2E completo** (spec `testing-bdd`, "Flujo de compra completo"): en `tests/e2e/features/purchase-flow.feature`: buscar "Hamb" → abrir "Hamburguesa" → agregar 2 al pedido → el encabezado muestra "2 productos" y "$25.00" → abrir `/pedido` y ver el total $25.00. Va en esta rama porque es la última y la que completa el flujo.
 
 ## Risks / Trade-offs
+
+- [Pedido guardado con la versión 1 del store] → `migrate` y `sanitizeItems` completan `image` con `''`. La línea se muestra con el fondo neutro en vez de perderse.
+- [Encabezado angosto en móvil con buscador y resumen] → En pantallas chicas el resumen se reduce al ícono con badge y el monto. Se verifica a 375 px.
 
 - [Recarga en un hosting estático sin fallback] → `/producto/7` respondería 404 desde el servidor. En desarrollo y en `vite preview` funciona. Al publicar, el hosting tiene que reescribir las rutas a `index.html` (ver §14).
 - [Imágenes externas que no cargan] → Hoy una de las 54 responde 404. El fallback neutro del atom `Image` cubre ese caso en el menú y en el detalle.
@@ -351,7 +423,6 @@ No hay nada que migrar porque el repositorio está vacío. Rollback: como es el 
 ## Open Questions
 
 - Los valores reales de `VITE_API_URL` y `VITE_API_TOKEN` y los nombres de campo de la API real. Solo afectan a `productService`, los fixtures y `.env`, no a las specs.
-- **`category` e `isAvailable`** llegan en la respuesta de la API, pero el modelo `Product` no los usa. `category` es un id numérico sin nombre, así que el detalle no lo muestra. Se decide al planificar la búsqueda.
+- **`category` e `isAvailable`** llegan en la respuesta de la API, pero el modelo `Product` no los usa. `category` es un id numérico sin nombre, así que ni el detalle ni la búsqueda lo usan (ver §16).
 - **KioskID**: el kiosco es el 8 (`KioskID=8`, 54 productos). Se configura solo en `VITE_API_URL`.
-- **El modelo sin `category` afecta a otras specs**: `product-search` todavía menciona la coincidencia por categoría. Además, `shopping-cart` pide la imagen de cada línea y `CartItem` todavía no la guarda. Se resuelven al planificar cada una de esas features.
 - La moneda y el locale de los precios. Por ahora se usa `en-US` con `USD`, que produce `$12.50` como piden los escenarios (`es` produciría `12,50 US$`). Es configurable en `formatPrice`, pero si se cambia hay que actualizar los escenarios.

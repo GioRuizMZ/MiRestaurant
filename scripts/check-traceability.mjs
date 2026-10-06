@@ -7,7 +7,7 @@ import { join, relative, sep } from 'node:path'
  * Capacidades de comportamiento verificadas con features (design §10).
  * Cada rama feature/* agrega aquí su capacidad junto con sus .feature.
  */
-export const TRACED_CAPABILITIES = ['app-layout', 'product-catalog', 'product-detail']
+export const TRACED_CAPABILITIES = ['app-layout', 'product-catalog', 'product-detail', 'shopping-cart']
 
 const ROOT = process.cwd()
 

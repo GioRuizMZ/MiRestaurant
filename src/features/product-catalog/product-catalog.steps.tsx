@@ -172,7 +172,7 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   })
 
   Scenario('Agregar desde la tarjeta', ({ Given, When, Then, And }) => {
-    Given('el carrito está vacío', () => {
+    Given('el pedido está vacío', () => {
       expect(useCartStore.getState().items).toEqual([])
       app = renderApp('/')
     })
@@ -180,11 +180,12 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
       const card = await cardOf('Hamburguesa')
       await app.user.click(within(card).getByRole('button', { name: /agregar/i }))
     })
-    Then('el carrito tiene 1 unidad de "Hamburguesa" y el indicador de la barra superior muestra "1"', () => {
+    Then('el pedido tiene 1 unidad de "Hamburguesa" y el encabezado muestra "1 producto" y "$12.50"', () => {
       expect(useCartStore.getState().items).toEqual([
-        { id: 7, sku: 'PLT-007', name: 'Hamburguesa', price: 12.5, quantity: 1 },
+        { id: 7, sku: 'PLT-007', name: 'Hamburguesa', image: products[0].image, price: 12.5, quantity: 1 },
       ])
-      expect(screen.getByTestId('cart-count')).toHaveTextContent('1')
+      expect(screen.getByTestId('order-count')).toHaveTextContent('1 producto')
+      expect(screen.getByTestId('order-total')).toHaveTextContent('$12.50')
     })
     And('el usuario sigue en la pantalla principal', () => {
       expect(app.router.state.location.pathname).toBe('/')

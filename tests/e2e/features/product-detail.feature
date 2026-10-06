@@ -7,9 +7,9 @@ Feature: product-detail
 
   Scenario: Agregar varias unidades
     Given el usuario abre el detalle en "/producto/7"
-    When aumenta la cantidad a 3 y pulsa "Agregar al carrito"
-    Then el indicador de la barra superior muestra "3"
-    And ve el aviso "Agregado al carrito: 3 × Hamburguesa" y el contador vuelve a 1
+    When aumenta la cantidad a 3 y pulsa "Agregar al pedido"
+    Then el encabezado muestra "3 productos" y "$37.50"
+    And ve el aviso "Agregado al pedido: 3 × Hamburguesa" y el contador vuelve a 1
 
   Scenario: Volver al menú principal
     Given el usuario abre el detalle en "/producto/7"

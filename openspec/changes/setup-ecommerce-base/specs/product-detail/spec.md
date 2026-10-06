@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Pantalla de detalle de un producto: muestra su información completa (imagen, nombre, descripción, precio y SKU) en una ruta propia, permite agregar al carrito la cantidad elegida y volver al menú principal.
+Pantalla de detalle de un producto: muestra su información completa (imagen, nombre, descripción, precio y SKU) en una ruta propia, permite agregar al pedido la cantidad elegida y volver al menú principal.
 
 ## ADDED Requirements
 
@@ -23,19 +23,19 @@ Si el producto no tiene imagen o la imagen no carga, el detalle SHALL mostrar en
 - **THEN** ve un fondo neutro en el lugar de la imagen
 - **AND** ve el nombre, la descripción, el precio y el SKU
 
-### Requirement: Agregar al carrito con cantidad
-Debajo de la descripción, el detalle SHALL tener un contador de cantidad (inicial 1, mínimo 1, máximo 99) con botones "Disminuir cantidad" y "Aumentar cantidad", y un botón "Agregar al carrito" que suma esa cantidad al pedido. Al agregar, SHALL mostrar el aviso "Agregado al carrito: <cantidad> × <nombre>" y el contador vuelve a 1.
+### Requirement: Agregar al pedido con cantidad
+Debajo de la descripción, el detalle SHALL tener un contador de cantidad (inicial 1, mínimo 1, máximo 99) con botones "Disminuir cantidad" y "Aumentar cantidad", y un botón "Agregar al pedido" que suma esa cantidad al pedido. Al agregar, SHALL mostrar el aviso "Agregado al pedido: <cantidad> × <nombre>" y el contador vuelve a 1.
 
 #### Scenario: Agregar varias unidades
-- **GIVEN** el carrito está vacío y el usuario está en `/producto/7`
-- **WHEN** aumenta la cantidad a 3 y pulsa "Agregar al carrito"
-- **THEN** el carrito tiene 3 unidades de "Hamburguesa" y el indicador de la barra superior muestra "3"
-- **AND** ve el aviso "Agregado al carrito: 3 × Hamburguesa" y el contador vuelve a 1
+- **GIVEN** el pedido está vacío y el usuario está en `/producto/7`
+- **WHEN** aumenta la cantidad a 3 y pulsa "Agregar al pedido"
+- **THEN** el pedido tiene 3 unidades de "Hamburguesa" y el encabezado muestra "3 productos" y "$37.50"
+- **AND** ve el aviso "Agregado al pedido: 3 × Hamburguesa" y el contador vuelve a 1
 
-#### Scenario: Sumar a un producto que ya está en el carrito
-- **GIVEN** el carrito ya tiene 1 unidad de "Hamburguesa" y el usuario está en `/producto/7`
-- **WHEN** aumenta la cantidad a 2 y pulsa "Agregar al carrito"
-- **THEN** el carrito tiene 3 unidades de "Hamburguesa" en una sola línea
+#### Scenario: Sumar a un producto que ya está en el pedido
+- **GIVEN** el pedido ya tiene 1 unidad de "Hamburguesa" y el usuario está en `/producto/7`
+- **WHEN** aumenta la cantidad a 2 y pulsa "Agregar al pedido"
+- **THEN** el pedido tiene 3 unidades de "Hamburguesa" en una sola línea
 
 #### Scenario: Cantidad mínima
 - **GIVEN** el usuario está en `/producto/7` con la cantidad en 1

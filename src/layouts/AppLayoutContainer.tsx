@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { AppLayout } from '@/components/templates/AppLayout'
-import { useCartCount } from '@/hooks/useCart'
+import { useOrderSummary } from '@/hooks/useCart'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useSearchStore } from '@/store/searchStore'
 import { DESKTOP_QUERY, useUiStore } from '@/store/uiStore'
@@ -10,7 +10,7 @@ import { DESKTOP_QUERY, useUiStore } from '@/store/uiStore'
 export function AppLayoutContainer() {
   const { pathname } = useLocation()
   const isDesktop = useMediaQuery(DESKTOP_QUERY)
-  const cartCount = useCartCount()
+  const order = useOrderSummary()
   const searchTerm = useSearchStore((state) => state.term)
   const setSearchTerm = useSearchStore((state) => state.setTerm)
   const clearSearch = useSearchStore((state) => state.clear)
@@ -26,7 +26,8 @@ export function AppLayoutContainer() {
   return (
     <AppLayout
       isDesktop={isDesktop}
-      cartCount={cartCount}
+      orderCount={order.count}
+      orderTotal={order.total}
       searchValue={searchTerm}
       onSearchChange={setSearchTerm}
       onSearchClear={clearSearch}
