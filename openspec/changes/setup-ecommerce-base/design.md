@@ -393,7 +393,7 @@ Se mantiene la spec `product-search` existente (buscador en la barra superior, u
 - `CatalogPage` aplica primero `useProductSearch(data)` y después `sortProductsByName`, así los resultados también quedan de la A a la Z.
 - Sin coincidencias: `EmptyState` con 'No encontramos productos para "<término>"' y el botón "Limpiar búsqueda", que llama a `searchStore.clear()`.
 - El contador "N productos" del título refleja los resultados filtrados.
-- Buscar desde otra pantalla: `AppLayoutContainer` observa el término. Si, sin espacios, tiene más de 3 caracteres y la ruta no es `/`, navega a `/` con `navigate('/')`. Usa el término sin debounce para que la navegación sea inmediata. El filtrado igual espera el debounce.
+- Buscar desde otra pantalla: el handler `onSearchChange` de `AppLayoutContainer` navega a `/` cuando el nuevo término, sin espacios, tiene más de 3 caracteres y la ruta no es `/`. Usa el término sin debounce para que la navegación sea inmediata; el filtrado igual espera el debounce. Va en el handler y no en un efecto: con un efecto, abrir un detalle con una búsqueda activa devolvería al usuario al menú.
 - Los tests del debounce usan `vi.useFakeTimers` y el `advanceTimers` de `renderApp`, que ya existe.
 
 **Flujo E2E completo** (spec `testing-bdd`, "Flujo de compra completo"): en `tests/e2e/features/purchase-flow.feature`: buscar "Hamb" → abrir "Hamburguesa" → agregar 2 al pedido → el encabezado muestra "2 productos" y "$25.00" → abrir `/pedido` y ver el total $25.00. Va en esta rama porque es la última y la que completa el flujo.

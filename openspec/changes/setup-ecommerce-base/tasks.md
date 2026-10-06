@@ -63,13 +63,13 @@
 
 > Va después del pedido (grupo 10): es la última rama y trae el escenario E2E del flujo completo. Coincide solo por nombre y con un debounce de 250 ms (design §16).
 
-- [ ] 8.1 Crear `feature/product-search` desde `develop` actualizado (con el pedido integrado). Verificar con `git log` que incluye el merge de `feature/shopping-cart`.
-- [ ] 8.2 Implementar `useProductSearch(products)`: `useDebouncedValue(term, 250)`, `trim`, más de 3 caracteres y `normalizeText(name).includes(...)`. Verificar con tests unitarios el umbral, las tildes, las mayúsculas, la coincidencia en medio del nombre y el término con espacios.
-- [ ] 8.3 En `CatalogPage`, filtrar con `useProductSearch` antes de `sortProductsByName`. Mostrar el estado sin resultados ('No encontramos productos para "<término>"' y "Limpiar búsqueda") y que el contador del título refleje los resultados. Verificar en el navegador.
-- [ ] 8.4 En `AppLayoutContainer`, navegar a `/` cuando el término activo (sin espacios, más de 3 caracteres) se escribe fuera del menú. Verificar desde `/producto/7` y desde `/pedido`.
-- [ ] 8.5 Escribir `src/features/product-search/product-search.feature` (`@component`, con fake timers para el debounce) y sus steps, y agregar `product-search` a `TRACED_CAPABILITIES`. Verificar que `npm test` y `npm run check:traceability` pasan.
-- [ ] 8.6 Escribir `tests/e2e/features/purchase-flow.feature` (`@e2e`): buscar "Hamb" → detalle → agregar 2 al pedido → el encabezado muestra "2 productos" y "$25.00" → `/pedido` con total $25.00. Verificar que `npm run test:e2e` pasa.
-- [ ] 8.7 Ejecutar `npm run verify`, hacer push y abrir el PR a `develop`. Verificar con `gh pr view`.
+- [x] 8.1 Crear `feature/product-search` desde `feature/shopping-cart` (PR apilado: el PR #3 todavía no tenía merge y había que entregar las dos features). Verificar con `git log` que incluye el commit del pedido.
+- [x] 8.2 Implementar `useProductSearch(products)`: `useDebouncedValue(term, 250)`, `trim`, más de 3 caracteres y `normalizeText(name).includes(...)`. Verificar con tests unitarios el umbral, las tildes, las mayúsculas, la coincidencia en medio del nombre y el término con espacios.
+- [x] 8.3 En `CatalogPage`, filtrar con `useProductSearch` antes de `sortProductsByName`. Mostrar el estado sin resultados ('No encontramos productos para "<término>"' y "Limpiar búsqueda") y que el contador del título refleje los resultados. Verificar en el navegador.
+- [x] 8.4 En `AppLayoutContainer`, navegar a `/` cuando el término activo (sin espacios, más de 3 caracteres) se escribe fuera del menú. Verificar desde `/producto/7` y desde `/pedido`.
+- [x] 8.5 Escribir `src/features/product-search/product-search.feature` (`@component`, con fake timers para el debounce) y sus steps, y agregar `product-search` a `TRACED_CAPABILITIES`. Verificar que `npm test` y `npm run check:traceability` pasan.
+- [x] 8.6 Escribir `tests/e2e/features/purchase-flow.feature` (`@e2e`): buscar "Hamb" → detalle → agregar 2 al pedido → el encabezado muestra "2 productos" y "$25.00" → `/pedido` con total $25.00. Verificar que `npm run test:e2e` pasa.
+- [x] 8.7 Ejecutar `npm run verify`, hacer push y abrir el PR a `develop`. Verificar con `gh pr view`.
 
 ## 9. Feature 2: Detalle del producto (rama `feature/product-detail` → PR a `develop`)
 
