@@ -80,7 +80,7 @@
 - [x] 9.10 Crear la molecule `QuantitySelector` (1 a 99, botones deshabilitados en los límites) y agregar a `ProductInfo` el contador, el botón "Agregar al carrito" y el aviso, debajo de la descripción. Conectar en la page `addItem(product, quantity)`, el reinicio a 1 y el aviso. Verificar con tests de render y con los escenarios "Agregar varias unidades", "Sumar a un producto que ya está en el carrito" y "Cantidad mínima".
 - [x] 9.7 Implementar `ProductDetailPage`: validar el id, mostrar skeleton, error con "Reintentar", "Producto no encontrado" e info, y el botón "Volver al menú principal". Verificar en el navegador, también al recargar `/producto/7`.
 - [x] 9.8 Escribir `src/features/product-detail/product-detail.feature` (`@component`) y `tests/e2e/features/product-detail.feature` (`@e2e`: "Ver detalle", "Volver al menú principal" y "Recargar la página") con sus steps, y agregar `product-detail` a `TRACED_CAPABILITIES`. Verificar que `npm test`, `npm run check:traceability` y `npm run test:e2e` pasan.
-- [ ] 9.9 Ejecutar `npm run verify`, hacer push y abrir el PR a `develop`. Verificar con `gh pr view`.
+- [x] 9.9 Ejecutar `npm run verify`, hacer push y abrir el PR a `develop`. Verificar con `gh pr view`.
 
 ## 10. Feature 3: Carrito (rama `feature/shopping-cart` → PR a `develop`)
 
