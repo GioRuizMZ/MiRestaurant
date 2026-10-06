@@ -39,7 +39,7 @@ function ProductDetail({ id }: { id: number }) {
 
   function add(item: Product) {
     addToCart(item, quantity)
-    setAddedMessage(`Agregado al carrito: ${quantity} × ${item.name}`)
+    setAddedMessage(`Agregado al pedido: ${quantity} × ${item.name}`)
     setQuantity(1)
   }
 

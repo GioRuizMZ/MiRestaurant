@@ -23,11 +23,11 @@ Los features SHALL ejecutarse en dos niveles: el nivel de componentes (component
 - **AND** el comando de tests E2E ejecuta solo los escenarios `@e2e`
 
 ### Requirement: Flujos críticos cubiertos en E2E
-Los flujos "buscar un producto", "ver su detalle", "agregarlo al carrito" y "ver el indicador actualizado en la barra superior" SHALL estar cubiertos al menos por un escenario `@e2e`.
+Los flujos "buscar un producto", "ver su detalle", "agregarlo al pedido" y "ver el resumen actualizado en el encabezado" SHALL estar cubiertos al menos por un escenario `@e2e`.
 
 #### Scenario: Flujo de compra completo
 - **WHEN** se ejecuta la suite E2E
-- **THEN** existe un escenario que recorre búsqueda, detalle y carrito y verifica el indicador de la barra superior
+- **THEN** existe un escenario que recorre búsqueda, detalle y pedido y verifica el resumen del encabezado
 
 ### Requirement: Datos de prueba compartidos
 Los dos niveles SHALL usar las mismas definiciones de respuestas mockeadas de la API, para que un escenario describa los mismos datos en ambos niveles.

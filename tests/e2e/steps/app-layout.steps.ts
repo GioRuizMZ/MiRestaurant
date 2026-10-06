@@ -20,12 +20,12 @@ Given('el usuario está en el catálogo', async ({ page }) => {
   await expect(page.getByRole('banner')).toBeVisible()
 })
 
-When('abre el carrito desde la barra superior', async ({ page }) => {
-  await page.getByRole('banner').getByRole('link', { name: /carrito/i }).click()
+When('abre el pedido desde la barra superior', async ({ page }) => {
+  await page.getByRole('banner').getByRole('link', { name: /^Ver pedido/ }).click()
 })
 
-Then('el área de contenido muestra el carrito', async ({ page }) => {
-  await expect(page).toHaveURL(/\/cart$/)
+Then('el área de contenido muestra el pedido', async ({ page }) => {
+  await expect(page).toHaveURL(/\/pedido$/)
   await expect(page.getByRole('main')).toBeVisible()
 })
 

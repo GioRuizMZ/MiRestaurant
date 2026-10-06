@@ -73,38 +73,39 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   })
 
   Scenario('Agregar varias unidades', ({ Given, When, Then, And }) => {
-    Given('el carrito está vacío y el usuario está en "/producto/7"', async () => {
+    Given('el pedido está vacío y el usuario está en "/producto/7"', async () => {
       expect(useCartStore.getState().items).toEqual([])
       app = renderApp('/producto/7')
       await productTitle('Hamburguesa')
     })
-    When('aumenta la cantidad a 3 y pulsa "Agregar al carrito"', async () => {
+    When('aumenta la cantidad a 3 y pulsa "Agregar al pedido"', async () => {
       await increaseQuantityTo(app, 3)
-      await app.user.click(screen.getByRole('button', { name: 'Agregar al carrito' }))
+      await app.user.click(screen.getByRole('button', { name: 'Agregar al pedido' }))
     })
-    Then('el carrito tiene 3 unidades de "Hamburguesa" y el indicador de la barra superior muestra "3"', () => {
+    Then('el pedido tiene 3 unidades de "Hamburguesa" y el encabezado muestra "3 productos" y "$37.50"', () => {
       expect(useCartStore.getState().items).toEqual([
-        { id: 7, sku: 'PLT-007', name: 'Hamburguesa', price: 12.5, quantity: 3 },
+        { id: 7, sku: 'PLT-007', name: 'Hamburguesa', image: hamburguesa.image, price: 12.5, quantity: 3 },
       ])
-      expect(screen.getByTestId('cart-count')).toHaveTextContent('3')
+      expect(screen.getByTestId('order-count')).toHaveTextContent('3 productos')
+      expect(screen.getByTestId('order-total')).toHaveTextContent('$37.50')
     })
-    And('ve el aviso "Agregado al carrito: 3 × Hamburguesa" y el contador vuelve a 1', () => {
-      expect(screen.getByText('Agregado al carrito: 3 × Hamburguesa')).toBeInTheDocument()
+    And('ve el aviso "Agregado al pedido: 3 × Hamburguesa" y el contador vuelve a 1', () => {
+      expect(screen.getByText('Agregado al pedido: 3 × Hamburguesa')).toBeInTheDocument()
       expect(quantityValue()).toHaveTextContent('1')
     })
   })
 
-  Scenario('Sumar a un producto que ya está en el carrito', ({ Given, When, Then }) => {
-    Given('el carrito ya tiene 1 unidad de "Hamburguesa" y el usuario está en "/producto/7"', async () => {
+  Scenario('Sumar a un producto que ya está en el pedido', ({ Given, When, Then }) => {
+    Given('el pedido ya tiene 1 unidad de "Hamburguesa" y el usuario está en "/producto/7"', async () => {
       useCartStore.getState().addItem(hamburguesa, 1)
       app = renderApp('/producto/7')
       await productTitle('Hamburguesa')
     })
-    When('aumenta la cantidad a 2 y pulsa "Agregar al carrito"', async () => {
+    When('aumenta la cantidad a 2 y pulsa "Agregar al pedido"', async () => {
       await increaseQuantityTo(app, 2)
-      await app.user.click(screen.getByRole('button', { name: 'Agregar al carrito' }))
+      await app.user.click(screen.getByRole('button', { name: 'Agregar al pedido' }))
     })
-    Then('el carrito tiene 3 unidades de "Hamburguesa" en una sola línea', () => {
+    Then('el pedido tiene 3 unidades de "Hamburguesa" en una sola línea', () => {
       const items = useCartStore.getState().items
       expect(items).toHaveLength(1)
       expect(items[0]).toMatchObject({ id: 7, quantity: 3 })

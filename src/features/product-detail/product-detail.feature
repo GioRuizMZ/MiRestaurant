@@ -1,7 +1,7 @@
 @component
 Feature: product-detail
   Detalle del producto en /producto/:id: imagen, nombre, descripción, precio y SKU,
-  agregar al carrito con cantidad y regreso al menú principal. "Recargar la página" se ejecuta en el nivel @e2e.
+  agregar al pedido con cantidad y regreso al menú principal. "Recargar la página" se ejecuta en el nivel @e2e.
 
   Scenario: Ver detalle
     Given existe el producto id 7 "Hamburguesa", SKU "PLT-007", precio 12.50, con imagen y descripción
@@ -15,15 +15,15 @@ Feature: product-detail
     And ve el nombre, la descripción, el precio y el SKU
 
   Scenario: Agregar varias unidades
-    Given el carrito está vacío y el usuario está en "/producto/7"
-    When aumenta la cantidad a 3 y pulsa "Agregar al carrito"
-    Then el carrito tiene 3 unidades de "Hamburguesa" y el indicador de la barra superior muestra "3"
-    And ve el aviso "Agregado al carrito: 3 × Hamburguesa" y el contador vuelve a 1
+    Given el pedido está vacío y el usuario está en "/producto/7"
+    When aumenta la cantidad a 3 y pulsa "Agregar al pedido"
+    Then el pedido tiene 3 unidades de "Hamburguesa" y el encabezado muestra "3 productos" y "$37.50"
+    And ve el aviso "Agregado al pedido: 3 × Hamburguesa" y el contador vuelve a 1
 
-  Scenario: Sumar a un producto que ya está en el carrito
-    Given el carrito ya tiene 1 unidad de "Hamburguesa" y el usuario está en "/producto/7"
-    When aumenta la cantidad a 2 y pulsa "Agregar al carrito"
-    Then el carrito tiene 3 unidades de "Hamburguesa" en una sola línea
+  Scenario: Sumar a un producto que ya está en el pedido
+    Given el pedido ya tiene 1 unidad de "Hamburguesa" y el usuario está en "/producto/7"
+    When aumenta la cantidad a 2 y pulsa "Agregar al pedido"
+    Then el pedido tiene 3 unidades de "Hamburguesa" en una sola línea
 
   Scenario: Cantidad mínima
     Given el usuario está en "/producto/7" con la cantidad en 1

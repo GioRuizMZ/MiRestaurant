@@ -4,7 +4,7 @@ import type { CartItem, Product } from '@/types/product'
 
 export const CART_STORAGE_KEY = 'mirestaurant-cart'
 
-export type CartProduct = Pick<Product, 'id' | 'name' | 'price' | 'sku'>
+export type CartProduct = Pick<Product, 'id' | 'name' | 'price' | 'sku' | 'image'>
 
 interface CartState {
   items: CartItem[]
@@ -17,7 +17,8 @@ interface CartState {
   clear: () => void
 }
 
-function isCartItem(value: unknown): value is CartItem {
+/** Línea persistida válida. `image` puede faltar en datos de la versión 1 del store. */
+function isStoredItem(value: unknown): value is Omit<CartItem, 'image'> & { image?: unknown } {
   if (typeof value !== 'object' || value === null) return false
   const item = value as Record<string, unknown>
   return (
@@ -33,7 +34,11 @@ function isCartItem(value: unknown): value is CartItem {
 
 /** Descarta datos persistidos con forma inválida para arrancar sin errores. */
 export function sanitizeItems(value: unknown): CartItem[] {
-  return Array.isArray(value) ? value.filter(isCartItem) : []
+  if (!Array.isArray(value)) return []
+  return value.filter(isStoredItem).map((item) => ({
+    ...item,
+    image: typeof item.image === 'string' ? item.image : '',
+  }))
 }
 
 export const useCartStore = create<CartState>()(
@@ -51,8 +56,8 @@ export const useCartStore = create<CartState>()(
               ),
             }
           }
-          const { id, name, sku, price } = product
-          return { items: [...state.items, { id, name, sku, price, quantity: amount }] }
+          const { id, name, sku, image, price } = product
+          return { items: [...state.items, { id, name, sku, image, price, quantity: amount }] }
         }),
       increment: (id) =>
         set((state) => ({
@@ -69,7 +74,8 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: CART_STORAGE_KEY,
-      version: 1,
+      // v2: las líneas guardan `image`. Las de v1 se completan con "" en sanitizeItems.
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ items: state.items }),
       migrate: (persisted) => ({ items: sanitizeItems((persisted as { items?: unknown } | null)?.items) }),

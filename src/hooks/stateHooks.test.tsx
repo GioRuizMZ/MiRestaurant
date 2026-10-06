@@ -5,7 +5,7 @@ import { CART_STORAGE_KEY, useCartStore } from '@/store/cartStore'
 import { useSearchStore } from '@/store/searchStore'
 import { useUiStore } from '@/store/uiStore'
 import { resetTestState } from '@/test/resetTestState'
-import { useCart, useCartCount } from './useCart'
+import { useCart, useOrderSummary } from './useCart'
 import { useDebouncedValue } from './useDebouncedValue'
 
 afterEach(resetTestState)
@@ -24,12 +24,22 @@ describe('useCart', () => {
   })
 })
 
-describe('useCartCount', () => {
+describe('useOrderSummary', () => {
+  it('suma unidades y monto del pedido', () => {
+    const { result } = renderHook(() => useOrderSummary())
+    expect(result.current).toEqual({ count: 0, total: 0 })
+    act(() => {
+      useCartStore.getState().addItem(hamburguesa, 2)
+      useCartStore.getState().addItem(ensalada)
+    })
+    expect(result.current).toEqual({ count: 3, total: 33 })
+  })
+
   it('no vuelve a renderizar por cambios en otros stores', () => {
     let renders = 0
     renderHook(() => {
       renders += 1
-      return useCartCount()
+      return useOrderSummary()
     })
     act(() => useUiStore.getState().toggleSidebar())
     act(() => useSearchStore.getState().setTerm('hamb'))

@@ -71,12 +71,12 @@ Hacer click en cualquier parte de una tarjeta de producto (imagen, nombre, preci
 - **THEN** la aplicación navega a `/producto/7`
 
 ### Requirement: Agregar desde el menú
-Cada tarjeta SHALL tener un botón "Agregar" que suma una unidad del producto al carrito sin salir del menú principal ni abrir el detalle.
+Cada tarjeta SHALL tener un botón "Agregar" que suma una unidad del producto al pedido sin salir del menú principal ni abrir el detalle.
 
 #### Scenario: Agregar desde la tarjeta
-- **GIVEN** el carrito está vacío
+- **GIVEN** el pedido está vacío
 - **WHEN** el usuario pulsa "Agregar" en la tarjeta de "Hamburguesa"
-- **THEN** el carrito tiene 1 unidad de "Hamburguesa" y el indicador de la barra superior muestra "1"
+- **THEN** el pedido tiene 1 unidad de "Hamburguesa" y el encabezado muestra "1 producto" y "$12.50"
 - **AND** el usuario sigue en la pantalla principal
 
 ### Requirement: Respuesta visual a la interacción

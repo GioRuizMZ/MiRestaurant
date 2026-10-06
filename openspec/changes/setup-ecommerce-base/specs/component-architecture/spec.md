@@ -17,10 +17,10 @@ Los componentes de interfaz SHALL clasificarse en cinco niveles: atoms, molecule
 ### Requirement: Componentes de presentación sin lógica de datos
 Los componentes de atoms, molecules, organisms y templates SHALL ser de presentación: reciben datos por props y notifican eventos mediante callbacks. No acceden a la API, a la caché de queries ni a los stores globales.
 
-#### Scenario: TopBar muestra el carrito
-- **WHEN** el organism `TopBar` muestra la cantidad de productos del carrito
-- **THEN** recibe esa cantidad por props
-- **AND** no lee el store del carrito directamente
+#### Scenario: TopBar muestra el pedido
+- **WHEN** el organism `TopBar` muestra el total de productos y el monto del pedido
+- **THEN** recibe esos valores por props
+- **AND** no lee el store del pedido directamente
 
 ### Requirement: La lógica vive en hooks y containers
 La obtención de datos, el acceso a stores y las reglas de negocio SHALL vivir en hooks. Las pages y los containers de layout SHALL ser los únicos que usan esos hooks y pasan el resultado como props.
@@ -34,7 +34,7 @@ La obtención de datos, el acceso a stores y las reglas de negocio SHALL vivir e
 El linter del proyecto SHALL fallar si un archivo bajo `components/` importa de la capa de API, servicios, stores o hooks de datos.
 
 #### Scenario: Import prohibido
-- **WHEN** un atom importa el store del carrito
+- **WHEN** un atom importa el store del pedido
 - **THEN** el comando de lint termina con error indicando la regla violada
 
 ### Requirement: Estilos con utilidades

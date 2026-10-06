@@ -43,8 +43,10 @@ When('aumenta la cantidad a {int} y pulsa {string}', async ({ page }, target: nu
   await page.getByRole('button', { name: label }).click()
 })
 
-Then('el indicador de la barra superior muestra {string}', async ({ page }, count: string) => {
-  await expect(page.getByRole('banner').getByTestId('cart-count')).toHaveText(count)
+Then('el encabezado muestra {string} y {string}', async ({ page }, count: string, total: string) => {
+  const banner = page.getByRole('banner')
+  await expect(banner.getByTestId('order-count')).toHaveText(count)
+  await expect(banner.getByTestId('order-total')).toHaveText(total)
 })
 
 Then('ve el aviso {string} y el contador vuelve a 1', async ({ page }, message: string) => {

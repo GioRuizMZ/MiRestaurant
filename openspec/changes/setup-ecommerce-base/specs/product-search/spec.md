@@ -9,8 +9,8 @@ Permite encontrar productos rápido desde la barra superior: filtra el catálogo
 ### Requirement: Barra de búsqueda siempre disponible
 La barra superior SHALL contener un campo de búsqueda con el placeholder "Buscar productos..." visible en todas las rutas.
 
-#### Scenario: Búsqueda visible en el carrito
-- **WHEN** el usuario está en `/cart`
+#### Scenario: Búsqueda visible en el pedido
+- **WHEN** el usuario está en `/pedido`
 - **THEN** ve el campo de búsqueda en la barra superior
 
 ### Requirement: Umbral mínimo de 4 caracteres
@@ -39,17 +39,17 @@ El resultado SHALL actualizarse mientras el usuario escribe, sin pulsar Enter ni
 - **THEN** en menos de 300 ms el catálogo muestra solo "Ensalada"
 
 ### Requirement: Coincidencia flexible
-La coincidencia SHALL buscar el término dentro del nombre y de la categoría del producto, sin distinguir mayúsculas, minúsculas ni tildes.
+La coincidencia SHALL buscar el término dentro del nombre del producto, en cualquier posición, sin distinguir mayúsculas, minúsculas ni tildes.
 
 #### Scenario: Sin distinguir tildes ni mayúsculas
 - **GIVEN** existe el producto "Café americano"
 - **WHEN** el usuario escribe "CAFE"
 - **THEN** el catálogo muestra "Café americano"
 
-#### Scenario: Coincidencia por categoría
-- **GIVEN** "Coca-Cola" pertenece a la categoría "Bebidas"
-- **WHEN** el usuario escribe "bebi"
-- **THEN** el catálogo muestra "Coca-Cola"
+#### Scenario: Coincidencia en medio del nombre
+- **GIVEN** existe el producto "Café americano"
+- **WHEN** el usuario escribe "amer"
+- **THEN** el catálogo muestra "Café americano"
 
 ### Requirement: Sin resultados
 Si ningún producto coincide con un término activo, el catálogo SHALL mostrar el mensaje "No encontramos productos para \"<término>\"" y una acción para limpiar la búsqueda.

@@ -16,29 +16,24 @@ Todas las rutas de la aplicación SHALL renderizarse dentro de un layout común 
 - **AND** la barra superior y la barra lateral siguen visibles sin volver a montarse
 
 ### Requirement: Contenido de la barra superior
-La barra superior SHALL mostrar el logo o nombre de la tienda (enlace al catálogo), la barra de búsqueda y un acceso al carrito con un indicador del total de unidades.
+La barra superior SHALL mostrar el logo o nombre de la tienda (enlace al catálogo), la barra de búsqueda y el resumen del pedido (total de productos y monto, ver spec `shopping-cart`), que es un enlace a `/pedido`.
 
-#### Scenario: Indicador del carrito
-- **GIVEN** el carrito tiene 3 unidades en total
-- **WHEN** se muestra la barra superior
-- **THEN** el acceso al carrito muestra el indicador "3"
-
-#### Scenario: Carrito vacío
-- **GIVEN** el carrito está vacío
-- **WHEN** se muestra la barra superior
-- **THEN** el acceso al carrito no muestra indicador numérico
+#### Scenario: Acceso al pedido
+- **GIVEN** el usuario está en el menú principal
+- **WHEN** pulsa el resumen del pedido en la barra superior
+- **THEN** la aplicación navega a `/pedido` dentro del mismo layout
 
 #### Scenario: Volver al inicio
 - **WHEN** el usuario hace click en el logo
 - **THEN** la aplicación navega al catálogo
 
 ### Requirement: Navegación lateral
-La barra lateral SHALL contener un único enlace, "Menú", con un ícono de menú, que lleva al menú principal (`/`) y se resalta cuando esa ruta está activa. El carrito no aparece en la barra lateral: se accede desde la barra superior.
+La barra lateral SHALL contener un único enlace, "Menú", con un ícono de menú, que lleva al menú principal (`/`) y se resalta cuando esa ruta está activa. El pedido no aparece en la barra lateral: se accede desde la barra superior.
 
 #### Scenario: Ruta activa
 - **WHEN** el usuario está en el menú principal
 - **THEN** el enlace "Menú" de la barra lateral aparece resaltado
-- **AND** la barra lateral no tiene un enlace "Carrito"
+- **AND** la barra lateral no tiene un enlace "Pedido"
 
 ### Requirement: Barra lateral colapsable y responsive
 La barra lateral SHALL poder colapsarse y expandirse desde un botón de la barra superior. En pantallas menores a 768 px empieza oculta y se abre como panel superpuesto que se cierra al navegar.
@@ -49,7 +44,7 @@ La barra lateral SHALL poder colapsarse y expandirse desde un botón de la barra
 - **THEN** la barra lateral se colapsa y el contenido ocupa el espacio liberado
 
 #### Scenario: Móvil
-- **GIVEN** el viewport mide 375 px y el usuario está en el carrito
+- **GIVEN** el viewport mide 375 px y el usuario está en el pedido
 - **WHEN** el usuario abre el menú y elige "Menú"
 - **THEN** la aplicación navega al menú principal y el panel lateral se cierra
 
@@ -68,7 +63,7 @@ Abrir y cerrar la barra lateral SHALL animarse con una transición de 200 ms: en
 - **THEN** el panel lateral entra deslizándose desde la izquierda con una transición de 200 ms
 
 ### Requirement: Rutas de la aplicación
-La aplicación SHALL exponer las rutas `/` (catálogo), `/producto/:id` (detalle) y `/cart` (carrito). Cualquier otra ruta muestra una página de "no encontrado" dentro del layout, con un enlace al catálogo.
+La aplicación SHALL exponer las rutas `/` (catálogo), `/producto/:id` (detalle) y `/pedido` (pedido). Cualquier otra ruta muestra una página de "no encontrado" dentro del layout, con un enlace al catálogo.
 
 #### Scenario: Ruta inexistente
 - **WHEN** el usuario visita `/no-existe`

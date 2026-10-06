@@ -8,11 +8,13 @@ export interface Product {
   image: string
 }
 
-/** Línea del carrito: guarda los datos del producto al momento de agregarlo. */
+/** Línea del pedido: guarda los datos del producto al momento de agregarlo. */
 export interface CartItem {
   id: number
   name: string
   sku: string
+  /** URL de la imagen al momento de agregar. Cadena vacía si no tiene. */
+  image: string
   price: number
   quantity: number
 }
