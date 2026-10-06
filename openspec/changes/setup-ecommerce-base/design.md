@@ -152,7 +152,7 @@ Regla de ESLint (`no-restricted-imports`) aplicada a `src/components/**`: prohí
 
 ### 7. Carrito
 
-- `cartStore`: `items: CartItem[]` con `{ id, name, price, image, quantity }`. Acciones: `addItem(product, qty = 1)` (si el id ya existe, suma), `increment(id)`, `decrement(id)` (si llega a 0, quita la línea), `removeItem(id)` y `clear()`.
+- `cartStore`: `items: CartItem[]` con `{ id, sku, name, price, quantity }`. Acciones: `addItem(product, qty = 1)` (si el id ya existe, suma), `increment(id)`, `decrement(id)` (si llega a 0, quita la línea), `removeItem(id)` y `clear()`.
 - Los valores derivados (`totalItems`, `totalPrice`, `subtotal`) se calculan en `useCart` con selectores, no se guardan en el store.
 - `persist` usa la clave `mirestaurant-cart` con `version: 1` y una función `migrate`. Si el JSON está corrupto, se arranca con el carrito vacío.
 - El precio guardado en la línea es una decisión de la spec: el carrito no depende de la API.
@@ -177,11 +177,11 @@ createBrowserRouter([
 ```
 GET /products      -> Product[]
 GET /products/:id  -> Product | 404
-Product = { id: number; name: string; description: string;
-            price: number; image: string; category: string }
+Product = { id: number; sku: string; name: string;
+            description: string; price: number }
 ```
 
-Si la API real usa otros nombres de campos, el mapeo se hace **solo** en `productService` (API → `Product`). El resto de la app no cambia.
+Si la API real usa otros nombres de campos, el mapeo se hace **solo** en `productService` (API → `Product`). El resto de la app no cambia. La API no provee imágenes ni categorías (ver §13).
 
 ### 10. BDD en dos niveles
 
@@ -225,6 +225,51 @@ feature/shopping-cart                              *-*
 - Merge con **squash** desde `feature/*` a `develop` (un commit por feature) y **merge commit** desde `develop` a `main` (conserva la historia de la versión).
 - `.gitignore` incluye `node_modules`, `dist`, `.env`, `.env.*` (excepto `.env.example`), `test-results`, `playwright-report` y `.features-gen`.
 
+### 13. Feature 1: Menú principal
+
+```
++--------------------------------------------------------------+
+| Menu principal                                               |
+|                                                              |
+| +------------+  +------------+  +------------+  +----------+ |
+| |            |  |            |  |            |  |          | |
+| |     C      |  |     C      |  |     E      |  |    H     | |   <- placeholder 4:3
+| |            |  |            |  |            |  |          | |      con la inicial
+| +------------+  +------------+  +------------+  +----------+ |
+| Cafe americano  Coca-Cola       Ensalada        Hamburguesa  |
+| $3.50 [Agregar] $2.50 [Agregar] $8.00 [Agregar] $12.50 [Agr] |
++--------------------------------------------------------------+
+  grilla: 1 col (movil) / 2 (sm) / 3 (lg) / 4 (xl)
+```
+
+**Orden alfabético**
+- `lib/sortProductsByName.ts` ordena una copia con `Intl.Collator('es', { sensitivity: 'base', numeric: true })`. Con eso las mayúsculas y las tildes no afectan el orden, y "Ñ" queda después de "N".
+- El orden lo aplica la página sobre los datos de `useProducts()`, con `useMemo`, sin tocar la caché. Si después se suma la búsqueda, primero se filtra y luego se ordena, así los resultados filtrados también quedan de la A a la Z.
+- Alternativa descartada: usar `select` en `useProducts`. Mezcla una decisión de presentación con la query y obligaría a que todos los consumidores reciban la lista ordenada.
+
+**Imagen sin campo en la API**
+- `Product` no tiene imagen. El atom `Image` se extiende con la prop `fallbackText`: si `src` está vacío o falla, muestra un área de fondo neutro con la inicial de `fallbackText` en mayúscula. Mantiene `role="img"` y `aria-label` igual al nombre. `ProductCard` lo usa con proporción 4:3 (`aspect-[4/3]`) y `src=""`. Se descartó crear una molecule nueva (`ProductThumbnail`), porque es presentación pura sin composición y le corresponde al atom.
+- Cuando la API agregue imágenes, se suma `image?: string` a `Product`, se mapea en `productService` y el placeholder queda como fallback ante una URL vacía o con error. Las specs no cambian.
+
+**Tarjeta clicable con un botón dentro**
+- Se usa el patrón de "stretched link": el nombre es un `<Link to="/products/:id">` con un pseudo-elemento `after:absolute after:inset-0` que cubre toda la tarjeta. El botón "Agregar" va en `relative z-10`, así queda encima del enlace y no navega.
+- Se descartó envolver toda la tarjeta en un `<a>`: un `<button>` dentro de un `<a>` es HTML inválido y rompe la navegación con teclado.
+- El foco visible se aplica con `focus-within:ring` en la tarjeta.
+
+**Paleta neutra, minimalista y moderna**
+- Se reemplazan los tokens de `@theme` (en `index.css`) por una escala neutra:
+  - `--color-primary` pasa a `#171717` (neutral-900), con hover `#404040`;
+  - `canvas` a `#fafafa`, `line` a `#e5e5e5`, `muted` a `#737373` y `primary-50` a `#f5f5f5`.
+- Como los componentes ya usan tokens, el TopBar, el Sidebar y los botones cambian de paleta sin tocar su código.
+- Tarjeta: fondo `surface`, borde `line`, `rounded-card`. En hover: `shadow-md`, `-translate-y-0.5` y transición de 150 ms. Respeta `prefers-reduced-motion` con `motion-safe:`.
+- Botón "Agregar": variante `secondary`. En hover pasa a fondo `primary` y texto blanco.
+- Tipografía: nombre en `font-medium`, precio en `tabular-nums`, título "Menú principal" en `text-2xl font-semibold tracking-tight`.
+
+**Nivel de cada escenario**
+- Los escenarios de "Respuesta visual a la interacción" se ejecutan en `@e2e`, porque jsdom no calcula estilos de hover. Playwright compara el `background-color` computado antes y durante el `hover()`, y comprueba el foco con `toBeFocused` y el estilo del contenedor.
+- El resto de los escenarios corren en `@component`.
+- "Abrir detalle" y "Orden A a Z" también tienen escenario `@e2e`, para cubrir el flujo real en el navegador.
+
 ## Risks / Trade-offs
 
 - [El JWT es visible en el bundle] → Es aceptable solo porque se trata de un token fijo del reto. Queda documentado en `.env.example` y en el README. Si se pasa a producción, el token debería moverse a un proxy o BFF.
@@ -244,4 +289,5 @@ No hay nada que migrar porque el repositorio está vacío. Rollback: como es el 
 ## Open Questions
 
 - Los valores reales de `VITE_API_URL` y `VITE_API_TOKEN` y los nombres de campo de la API real. Solo afectan a `productService`, los fixtures y `.env`, no a las specs.
+- **El modelo sin `image` ni `category` afecta a otras specs**, que todavía los mencionan: `product-search` (coincidencia por categoría), `product-detail` (imagen y categoría) y `shopping-cart` (imagen de cada línea). Se resuelven al planificar cada una de esas features. No bloquean el menú principal.
 - La moneda y el locale de los precios. Por ahora se usa `en-US` con `USD`, que produce `$12.50` como piden los escenarios (`es` produciría `12,50 US$`). Es configurable en `formatPrice`, pero si se cambia hay que actualizar los escenarios.

@@ -6,6 +6,11 @@ export function useCartCount(): number {
   return useCartStore((state) => state.items.reduce((total, item) => total + item.quantity, 0))
 }
 
+/** Solo la acción de agregar: no vuelve a renderizar cuando cambia el contenido del carrito. */
+export function useAddToCart() {
+  return useCartStore((state) => state.addItem)
+}
+
 export function useCart() {
   const items = useCartStore((state) => state.items)
   const addItem = useCartStore((state) => state.addItem)

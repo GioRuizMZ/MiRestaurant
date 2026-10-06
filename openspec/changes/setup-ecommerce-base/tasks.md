@@ -42,17 +42,21 @@
 ## 6. Publicar la base y preparar el flujo de ramas (git-workflow)
 
 - [x] 6.1 Escribir el `README.md` (requisitos, `.env`, scripts, estructura, aviso sobre el token en el bundle y flujo `main` > `develop` > `feature/*`). Verificar que los comandos documentados funcionan tal como están escritos.
-- [ ] 6.2 Ejecutar `npm run verify` y hacer el commit base en `main` con push a `origin`. Verificar con `git log origin/main` que el commit existe.
-- [ ] 6.3 Crear `develop` desde `main` y publicarla. Verificar que `git rev-parse origin/develop` es igual a `origin/main`.
+- [x] 6.2 Ejecutar `npm run verify` y hacer el commit base en `main` con push a `origin`. Verificar con `git log origin/main` que el commit existe.
+- [x] 6.3 Crear `develop` desde `main` y publicarla. Verificar que `git rev-parse origin/develop` es igual a `origin/main`.
 - [ ] 6.4 Configurar la protección de `main` y `develop` en GitHub (requerir PR, sin push directo ni force-push) con `gh api`, o documentar los pasos manuales si faltan permisos. Verificar que un `git push origin develop` directo es rechazado.
 
-## 7. Feature 1: Catálogo (rama `feature/product-catalog` → PR a `develop`)
+## 7. Feature 1: Menú principal (rama `feature/product-catalog` → PR a `develop`)
 
-- [ ] 7.1 Crear `feature/product-catalog` desde `develop` actualizado. Verificar con `git branch --show-current`.
-- [ ] 7.2 Crear la molecule `ProductCard` y el organism `ProductGrid` (con estado skeleton). Verificar con tests de render.
-- [ ] 7.3 Implementar `CatalogPage` (carga, error con reintento, vacío, click a detalle, botón Agregar). Verificar en el navegador contra MSW.
-- [ ] 7.4 Escribir `product-catalog.feature` con todos los escenarios de la spec y sus steps, y agregar `product-catalog` a la lista de trazabilidad. Verificar que `npm test` y `npm run check:traceability` pasan.
-- [ ] 7.5 Ejecutar `npm run verify`, hacer push y abrir un PR a `develop` con `gh pr create --base develop` que enlace el cambio de OpenSpec y liste los escenarios. Verificar que el PR existe con `gh pr view`.
+- [x] 7.1 Crear `feature/product-catalog` desde `develop` actualizado. Verificar con `git branch --show-current`.
+- [x] 7.2 Reemplazar los tokens de `@theme` por la paleta neutra (design §13). Verificar que `npm test` sigue pasando y que el TopBar, el Sidebar y los botones se ven en tonos neutros en el navegador.
+- [x] 7.3 Implementar `lib/sortProductsByName` con `Intl.Collator('es', { sensitivity: 'base' })`, sin mutar la entrada. Verificar con tests unitarios el orden A→Z, mayúsculas, tildes y Ñ.
+- [x] 7.4 Extender el atom `Image` con `fallbackText` (placeholder neutro con la inicial en mayúscula, `role="img"` y `aria-label`). Verificar con tests de render con `src` vacío y con error de carga.
+- [x] 7.5 Crear la molecule `ProductCard` (stretched link al detalle, imagen 4:3, nombre, precio, botón "Agregar" en `z-10`, hover y `focus-within`) y el organism `ProductGrid` (grilla responsive y estado skeleton). Verificar con tests de render que el click en "Agregar" no navega y que `npm run lint` pasa.
+- [x] 7.6 Implementar `CatalogPage` (título "Menú principal", `useProducts` + `sortProductsByName` con `useMemo`, carga, error con reintento, vacío y `addItem` del carrito). Verificar en el navegador contra MSW.
+- [x] 7.7 Escribir `src/features/product-catalog/product-catalog.feature` (`@component`) con sus steps y agregar `product-catalog` a `TRACED_CAPABILITIES`. Verificar que `npm test` y `npm run check:traceability` pasan.
+- [x] 7.8 Escribir `tests/e2e/features/product-catalog.feature` (`@e2e`) con "Orden A a Z", "Abrir detalle", "Hover sobre el botón Agregar" y "Foco con teclado" y sus steps. Verificar que `npm run test:e2e` pasa.
+- [ ] 7.9 Ejecutar `npm run verify`, hacer push y abrir un PR a `develop` con `gh pr create --base develop` que enlace el cambio de OpenSpec y liste los escenarios. Verificar que el PR existe con `gh pr view`.
 
 ## 8. Búsqueda (rama `feature/product-search` → PR a `develop`)
 
