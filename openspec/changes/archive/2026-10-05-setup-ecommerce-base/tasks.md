@@ -44,7 +44,7 @@
 - [x] 6.1 Escribir el `README.md` (requisitos, `.env`, scripts, estructura, aviso sobre el token en el bundle y flujo `main` > `develop` > `feature/*`). Verificar que los comandos documentados funcionan tal como están escritos.
 - [x] 6.2 Ejecutar `npm run verify` y hacer el commit base en `main` con push a `origin`. Verificar con `git log origin/main` que el commit existe.
 - [x] 6.3 Crear `develop` desde `main` y publicarla. Verificar que `git rev-parse origin/develop` es igual a `origin/main`.
-- [ ] 6.4 Configurar la protección de `main` y `develop` en GitHub (requerir PR, sin push directo ni force-push) con `gh api`, o documentar los pasos manuales si faltan permisos. Verificar que un `git push origin develop` directo es rechazado.
+- [x] 6.4 Configurar la protección de `main` y `develop` en GitHub (requerir PR, sin push directo ni force-push) con `gh api`, o documentar los pasos manuales si faltan permisos. Verificar que un `git push origin develop` directo es rechazado.
 
 ## 7. Feature 1: Menú principal (rama `feature/product-catalog` → PR a `develop`)
 
@@ -102,5 +102,5 @@
 
 ## 11. Release a main
 
-- [ ] 11.1 Con las cuatro features integradas (menú, detalle, pedido y búsqueda), ejecutar `npm run verify` sobre `develop`. Verificar que termina con código 0.
-- [ ] 11.2 Abrir el PR de `develop` a `main` con el resumen de las capacidades entregadas. Verificar con `gh pr view` y, después del merge, que `origin/main` contiene todos los commits de `develop`.
+- [x] 11.1 Con las cuatro features integradas (menú, detalle, pedido y búsqueda), ejecutar `npm run verify` sobre `develop`. Verificar que termina con código 0.
+- [x] 11.2 Abrir el PR de `develop` a `main` con el resumen de las capacidades entregadas. Verificar con `gh pr view` y, después del merge, que `origin/main` contiene todos los commits de `develop`.
