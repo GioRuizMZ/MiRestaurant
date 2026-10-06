@@ -7,7 +7,7 @@ import { useAddToCart } from '@/hooks/useCart'
 import { sortProductsByName } from '@/lib/sortProductsByName'
 import type { Product } from '@/types/product'
 
-const productHref = (product: Pick<Product, 'id'>) => `/products/${product.id}`
+const productHref = (product: Pick<Product, 'id'>) => `/producto/${product.id}`
 
 /** Menú principal (spec product-catalog): productos de la A a la Z. */
 export function CatalogPage() {

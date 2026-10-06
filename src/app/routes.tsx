@@ -11,7 +11,7 @@ export const routes: RouteObject[] = [
     element: <AppLayoutContainer />,
     children: [
       { index: true, element: <CatalogPage /> },
-      { path: 'products/:id', element: <ProductDetailPage /> },
+      { path: 'producto/:id', element: <ProductDetailPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

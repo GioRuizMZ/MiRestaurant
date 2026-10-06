@@ -10,6 +10,7 @@ const paths = {
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
   home: 'M3 11l9-8 9 8M5 10v10h14V10',
   'arrow-left': 'M19 12H5M12 19l-7-7 7-7',
+  image: 'M4 5h16v14H4zM4 16l5-5 4 4 2-2 5 5M15 9h.01',
 } as const
 
 export type IconName = keyof typeof paths

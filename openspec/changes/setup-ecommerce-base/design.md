@@ -139,7 +139,7 @@ Regla de ESLint (`no-restricted-imports`) aplicada a `src/components/**`: prohí
 ### 5. Estado del servidor
 
 - `productKeys = { all: ['products'] as const, detail: (id) => ['products', id] as const }`.
-- `useProduct(id)` usa `initialData` desde la caché de `productKeys.all` (buscando por id) para mostrar el detalle de inmediato al venir del catálogo, y siempre consulta `GET /products/:id`. Así se cumple el requisito "Datos inmediatos desde el catálogo".
+- `useProduct(id)` obtiene el listado con `queryClient.ensureQueryData(productKeys.all)` y busca el id en él (la API no tiene endpoint por id, ver §9). Si el listado está fresco en caché, no hace ninguna petición. Si no lo está (URL directa o recarga), lo pide una vez y lo deja en caché, también para el menú. Mientras tanto usa `placeholderData` con el producto del listado. Ver §14.
 - `retry: (count, err) => count < 1 && !(err.status >= 400 && err.status < 500)`.
 
 ### 6. Búsqueda
@@ -163,7 +163,7 @@ Regla de ESLint (`no-restricted-imports`) aplicada a `src/components/**`: prohí
 createBrowserRouter([
   { element: <AppLayoutContainer/>, errorElement: <NotFoundPage/>, children: [
       { path: '/',             element: <CatalogPage/> },
-      { path: '/products/:id', element: <ProductDetailPage/> },
+      { path: '/producto/:id', element: <ProductDetailPage/> },
       { path: '/cart',         element: <CartPage/> },
       { path: '*',             element: <NotFoundPage/> },
   ]}
@@ -181,13 +181,13 @@ Authorization: Bearer <VITE_API_TOKEN>
 
 ProductDto = { id, sku, barcode, name, description, image, price, isAvailable,
                reference, category, orderIndex, printers[], modifier[] }
-Product    = { id: number; sku: string; name: string; description: string; price: number }
+Product    = { id: number; sku: string; name: string; description: string; price: number; image: string }
 ```
 
 - `VITE_API_URL` es la **URL absoluta** del endpoint y se usa tal cual: el cliente no tiene `baseURL` ni concatena rutas.
 - Los productos se leen de `data`. `isSuccess` se ignora porque llega en `false` incluso con `code: "0000"` ("Procesado exitosamente").
 - **No hay endpoint por id**: `getProduct(id)` busca en la lista y lanza `ApiError` 404 si no existe.
-- El mapeo `ProductDto → Product` vive solo en `productService`. La API sí trae `image`, `category` e `isAvailable`, pero hoy el modelo `Product` no los usa (ver §13 y Open Questions).
+- El mapeo `ProductDto → Product` vive solo en `productService`. `image` es una URL absoluta (blob de Azure) y se convierte en `''` si llega `null`. `category` (un id numérico) e `isAvailable` todavía no se usan (ver Open Questions).
 - MSW simula el endpoint `*/SrKioscoRemote/GetProducts` con el mismo sobre.
 
 ### 10. BDD en dos niveles
@@ -239,10 +239,10 @@ feature/shopping-cart                              *-*
 | Menu principal                                               |
 |                                                              |
 | +------------+  +------------+  +------------+  +----------+ |
-| | Cafe       |  | Coca-Cola  |  | Ensalada   |  | Hamburg. | |   <- sin imagen:
-| | americano  |  |            |  |            |  |          | |      nombre arriba,
-| |            |  |            |  |            |  |          | |      precio y boton
-| | $3.50 [Agr]|  | $2.50 [Agr]|  | $8.00 [Agr]|  |$12.50 [A]| |      abajo
+| | [ imagen ] |  | [ imagen ] |  | [ imagen ] |  | [imagen] | |   <- imagen 4:3 arriba
+| | Cafe       |  | Coca-Cola  |  | Ensalada   |  | Hamburg. | |      (fondo neutro si
+| | americano  |  |            |  |            |  |          | |      falta o no carga),
+| | $3.50 [Agr]|  | $2.50 [Agr]|  | $8.00 [Agr]|  |$12.50 [A]| |      nombre, precio y boton
 | +------------+  +------------+  +------------+  +----------+ |
 +--------------------------------------------------------------+
   grilla: 1 col (movil) / 2 (sm) / 3 (lg) / 4 (xl)
@@ -253,12 +253,13 @@ feature/shopping-cart                              *-*
 - El orden lo aplica la página sobre los datos de `useProducts()`, con `useMemo`, sin tocar la caché. Si después se suma la búsqueda, primero se filtra y luego se ordena, así los resultados filtrados también quedan de la A a la Z.
 - Alternativa descartada: usar `select` en `useProducts`. Mezcla una decisión de presentación con la query y obligaría a que todos los consumidores reciban la lista ordenada.
 
-**Sin imagen**
-- Los productos no tienen imagen, así que la tarjeta no reserva un área para ella: muestra el nombre (hasta 2 líneas) arriba y, abajo, el precio y el botón "Agregar". El skeleton de carga tiene la misma forma.
-- Se descartó un placeholder con la inicial: ocupaba espacio sin aportar información.
+**Imagen de la tarjeta** (actualizado en la feature 2)
+- Al principio la tarjeta no tenía imagen. Al revisar la API se vio que los 54 productos del kiosco traen `image` y que 53 de esas URLs cargan (una responde 404), así que la tarjeta muestra la imagen arriba, en un área `aspect-[4/3]` con `object-cover`.
+- Si `image` está vacío o la imagen falla (`onError`), el atom `Image` muestra un fondo neutro del mismo tamaño. Así todas las tarjetas tienen la misma altura y la grilla conserva su forma.
+- En la tarjeta la imagen es decorativa (`alt=""`): el nombre ya está en el enlace y repetirlo haría que el lector de pantalla lo leyera dos veces. El skeleton de carga incluye el área de la imagen.
 
 **Tarjeta clicable con un botón dentro**
-- Se usa el patrón de "stretched link": el nombre es un `<Link to="/products/:id">` con un pseudo-elemento `after:absolute after:inset-0` que cubre toda la tarjeta. El botón "Agregar" va en `relative z-10`, así queda encima del enlace y no navega.
+- Se usa el patrón de "stretched link": el nombre es un `<Link to="/producto/:id">` con un pseudo-elemento `after:absolute after:inset-0` que cubre toda la tarjeta. El botón "Agregar" va en `relative z-10`, así queda encima del enlace y no navega.
 - Se descartó envolver toda la tarjeta en un `<a>`: un `<button>` dentro de un `<a>` es HTML inválido y rompe la navegación con teclado.
 - El foco visible se aplica con `focus-within:ring` en la tarjeta.
 
@@ -276,7 +277,62 @@ feature/shopping-cart                              *-*
 - El resto de los escenarios corren en `@component`.
 - "Abrir detalle" y "Orden A a Z" también tienen escenario `@e2e`, para cubrir el flujo real en el navegador.
 
+### 14. Feature 2: Detalle del producto
+
+```
++--------------------------------------------------------------+
+| [<- Volver al menu principal]                                |
+|                                                              |
+| +-------------------------+   Hamburguesa          (h1)      |
+| |                         |   SKU: PLT-007         (muted)   |
+| |   imagen 1:1            |   $12.50               (grande)  |
+| |   (fondo neutro si      |                                  |
+| |    falta o no carga)    |   Descripcion                    |
+| +-------------------------+   Hamburguesa de res a la ...    |
+|                               [-] 1 [+]  [Agregar al carrito]|
+|                               Agregado al carrito: 1 × ...   |
++--------------------------------------------------------------+
+  movil: una columna (imagen arriba). md+: dos columnas.
+```
+
+**Ruta en español: `/producto/:id`**
+- Reemplaza a `/products/:id` en el router, en el enlace de la tarjeta del menú y en las specs `app-layout`, `product-catalog` y `product-search`. La ruta vieja deja de existir y cae en `NotFoundPage`. No hace falta redirigirla porque la app todavía no se publicó.
+
+**Funciona al recargar**
+- La app es una SPA con `createBrowserRouter`. `vite` y `vite preview` ya devuelven `index.html` para cualquier ruta (history fallback): al recargar `/producto/7` se monta la app y el router resuelve la ruta.
+- El detalle no depende de nada que solo exista en memoria: con la caché vacía, `useProduct` pide el listado y busca el id. Se prueba en dos niveles: "Abrir el detalle por URL" (`@component`, caché vacía) y "Recargar la página" (`@e2e`, `page.reload()` en un navegador real).
+- Si la app se publica en un hosting estático, hay que configurar el mismo fallback (por ejemplo `_redirects` en Netlify o `rewrites` en Vercel). Queda anotado en Risks.
+
+**Obtención de datos sin pedir dos veces**
+- `useProduct(id)` usa como `queryFn` `ensureQueryData(productKeys.all)` seguido de `findProductById(list, id)` (de `productService`), que lanza `ApiError` 404 si no encuentra el id. Al venir del menú, la caché está fresca: no hay petición y los datos salen por `placeholderData` en el primer render. Así se cumple "Venir desde el menú principal".
+- Se descartó dejar `getProduct(id)` como `queryFn`: pide el listado completo en cada visita al detalle y no llena la caché del menú.
+- El 404 no se reintenta (`shouldRetry` ya excluye los 4xx), así que "Producto no encontrado" aparece de inmediato.
+
+**Id no válido**
+- `ProductDetailPage` valida `useParams().id` con `/^\d+$/`. Si no es un número, muestra "Producto no encontrado" sin llamar a la API (la query queda con `enabled: false`).
+
+**Componentes**
+- Organism `ProductInfo` (presentación): recibe `product` (`name`, `description`, `price`, `sku`, `image`) y pinta la grilla de dos columnas. También exporta `ProductInfoSkeleton`, con la misma forma y `role="status"` con el nombre "Cargando producto".
+- Atom `Image`: conserva el fallback a un fondo neutro y le suma un ícono de imagen centrado. Si `alt` está vacío, el fallback queda `aria-hidden` (decorativo). En el detalle, `alt` es el nombre del producto y la imagen usa `loading="eager"` porque es el contenido principal.
+- "Volver al menú principal" es un `<Link to="/">` con estilo de botón y el ícono `arrow-left`. Es un enlace y no un `<button>` porque navega: se puede abrir en otra pestaña y el lector de pantalla lo anuncia como enlace. Va arriba del contenido y también en los estados de "no encontrado" y de error.
+- `ProductDetailPage` (page): lee el id, llama a `useProduct` y elige entre skeleton, error con "Reintentar", "Producto no encontrado" o `ProductInfo`. No tiene marcado propio de la información del producto.
+- Molecule `QuantitySelector` (presentación): `value`, `min`, `max` y `onChange`. Pinta los botones "Disminuir cantidad" y "Aumentar cantidad" (`IconButton` con `minus` y `plus`), que se deshabilitan en los límites, y el valor con `aria-live="polite"`. El estado de la cantidad vive en la page, no en el store: es un dato de la pantalla.
+- `ProductInfo` recibe la cantidad, `onQuantityChange`, `onAdd` y `addedMessage` por props, y pinta el contador y el botón "Agregar al carrito" (variante `primary`, ícono `cart`) debajo de la descripción. El aviso va en un `role="status"` para que el lector de pantalla lo anuncie.
+- `ProductDetailPage` llama a `useAddToCart()` con `addItem(product, quantity)`. El store ya suma a la línea existente. Después vuelve la cantidad a 1 y guarda el texto del aviso. El aviso se borra al cambiar la cantidad o de producto. No hay un toast global: el aviso aparece junto al botón, donde el usuario está mirando.
+- Máximo 99 unidades por agregado: evita cantidades accidentales y mantiene el contador angosto.
+- Quedan fuera de esta feature la categoría y conservar la búsqueda al volver.
+
+**Datos de prueba**
+- Los fixtures de `src/mocks/data/products.ts` agregan `image: '/mock-images/<id>.svg'`. Un handler de MSW responde a `*/mock-images/:file` con un SVG generado. Así el nivel `@e2e` muestra imágenes reales sin agregar archivos a `public/` ni depender del blob de Azure.
+
+**Nivel de cada escenario**
+- `@component`: todos menos "Recargar la página".
+- `@e2e`: "Recargar la página", "Ver detalle", "Volver al menú principal" y "Agregar varias unidades", para cubrir la URL real, la imagen cargada y el indicador del carrito en el navegador.
+
 ## Risks / Trade-offs
+
+- [Recarga en un hosting estático sin fallback] → `/producto/7` respondería 404 desde el servidor. En desarrollo y en `vite preview` funciona. Al publicar, el hosting tiene que reescribir las rutas a `index.html` (ver §14).
+- [Imágenes externas que no cargan] → Hoy una de las 54 responde 404. El fallback neutro del atom `Image` cubre ese caso en el menú y en el detalle.
 
 - [El JWT es visible en el bundle] → Es aceptable solo porque se trata de un token fijo del reto. Queda documentado en `.env.example` y en el README. Si se pasa a producción, el token debería moverse a un proxy o BFF.
 - [El contrato de la API es supuesto] → El mapeo queda aislado en `productService` y los fixtures de MSW siguen el contrato provisional. Al conocer la API real cambian solo esos dos archivos.
@@ -295,7 +351,7 @@ No hay nada que migrar porque el repositorio está vacío. Rollback: como es el 
 ## Open Questions
 
 - Los valores reales de `VITE_API_URL` y `VITE_API_TOKEN` y los nombres de campo de la API real. Solo afectan a `productService`, los fixtures y `.env`, no a las specs.
-- **`category` e `isAvailable`** llegan en la respuesta de la API pero el modelo `Product` no los usa. Se decide al planificar búsqueda y detalle.
+- **`category` e `isAvailable`** llegan en la respuesta de la API, pero el modelo `Product` no los usa. `category` es un id numérico sin nombre, así que el detalle no lo muestra. Se decide al planificar la búsqueda.
 - **KioskID**: el kiosco es el 8 (`KioskID=8`, 54 productos). Se configura solo en `VITE_API_URL`.
-- **El modelo sin `image` ni `category` afecta a otras specs**, que todavía los mencionan: `product-search` (coincidencia por categoría), `product-detail` (imagen y categoría) y `shopping-cart` (imagen de cada línea). Se resuelven al planificar cada una de esas features. No bloquean el menú principal.
+- **El modelo sin `category` afecta a otras specs**: `product-search` todavía menciona la coincidencia por categoría. Además, `shopping-cart` pide la imagen de cada línea y `CartItem` todavía no la guarda. Se resuelven al planificar cada una de esas features.
 - La moneda y el locale de los precios. Por ahora se usa `en-US` con `USD`, que produce `$12.50` como piden los escenarios (`es` produciría `12,50 US$`). Es configurable en `formatPrice`, pero si se cambia hay que actualizar los escenarios.

@@ -1,12 +1,17 @@
 @component
 Feature: product-catalog
-  Menú principal: productos ordenados de la A a la Z, con acceso al detalle y al carrito.
+  Menú principal: productos con imagen ordenados de la A a la Z, con acceso al detalle y al carrito.
   Los escenarios de hover y foco se ejecutan en el nivel @e2e.
 
   Scenario: Menú con productos
     Given la API devuelve 3 productos
     When el usuario abre la pantalla principal
-    Then ve el título "Menú principal" y 3 tarjetas, cada una con nombre y precio y sin imagen
+    Then ve el título "Menú principal" y 3 tarjetas, cada una con imagen, nombre y precio
+
+  Scenario: Producto sin imagen en el menú
+    Given la API devuelve "Hamburguesa" sin imagen
+    When el usuario abre la pantalla principal
+    Then la tarjeta de "Hamburguesa" muestra un fondo neutro en lugar de la imagen, con su nombre, su precio y el botón "Agregar"
 
   Scenario: Orden A a Z
     Given la API devuelve "Hot dog", "Hamburguesa", "Ensalada", "Coca-Cola" y "Café americano" en ese orden
@@ -39,7 +44,7 @@ Feature: product-catalog
 
   Scenario: Abrir detalle
     When el usuario hace click en la tarjeta de "Hamburguesa" (id 7)
-    Then la aplicación navega a "/products/7"
+    Then la aplicación navega a "/producto/7"
 
   Scenario: Agregar desde la tarjeta
     Given el carrito está vacío

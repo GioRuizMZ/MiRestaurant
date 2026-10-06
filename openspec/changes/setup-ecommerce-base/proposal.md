@@ -12,9 +12,9 @@ MiRestaurant es un repositorio nuevo, sin código. Si el catálogo, el detalle y
 - Estándar de **componentes**: atomic design (atoms, molecules, organisms, templates, pages), con componentes solo de presentación y la lógica en hooks y containers.
 - **Layout** de la aplicación: barra superior, barra lateral y un outlet donde se renderizan las rutas hijas.
 - Estándar de **pruebas BDD**: los escenarios de las specs se ejecutan como archivos `.feature` en dos niveles, componentes (jsdom + API mockeada) y E2E (navegador real).
-- Feature 1, **menú principal**: pantalla principal con los productos ordenados de la A a la Z por nombre. Cada tarjeta muestra nombre, precio y un botón "Agregar", sin imagen. Hacer click en la tarjeta abre el detalle. La interfaz es minimalista y moderna, con colores neutros y hovers en botones y tarjetas.
+- Feature 1, **menú principal**: pantalla principal con los productos ordenados de la A a la Z por nombre. Cada tarjeta muestra la imagen del producto (o un fondo neutro si no carga), el nombre, el precio y un botón "Agregar". Hacer click en la tarjeta abre el detalle. La interfaz es minimalista y moderna, con colores neutros y hovers en botones y tarjetas.
 - **Búsqueda**: barra que filtra productos en tiempo real a partir de 4 caracteres y muestra un estado vacío cuando no hay resultados.
-- Feature 2, **detalle de producto**: al hacer click en un producto se ve su información completa.
+- Feature 2, **detalle de producto**: pantalla con ruta propia `/producto/:id` que muestra imagen, nombre, descripción, precio y SKU, un contador de cantidad con "Agregar al carrito" y un botón "Volver al menú principal". Funciona al abrir la URL directamente y al recargar la página.
 - Feature 3, **carrito**: estado global del pedido. Agregar un producto que ya está en el carrito aumenta su cantidad.
 - **Flujo de ramas** `main` > `develop` > `feature/*`: la base del proyecto va a `main`, cada feature se desarrolla en su rama y entra a `develop` por PR, y las versiones pasan de `develop` a `main` por PR.
 
@@ -30,7 +30,7 @@ MiRestaurant es un repositorio nuevo, sin código. Si el catálogo, el detalle y
 - `testing-bdd`: trazabilidad entre escenarios de spec y archivos `.feature`, y niveles de ejecución.
 - `product-catalog`: menú principal con el listado de productos ordenado por nombre, sus estados de carga, error y vacío, y la navegación al detalle.
 - `product-search`: filtrado de productos en tiempo real desde la barra de búsqueda.
-- `product-detail`: vista con la información completa de un producto.
+- `product-detail`: vista en `/producto/:id` con la información completa de un producto (imagen, nombre, descripción, precio y SKU) y el regreso al menú principal.
 - `shopping-cart`: gestión del pedido (agregar, acumular cantidades, modificar, quitar y totales).
 - `git-workflow`: ramas permanentes, ramas de feature, PRs a `develop`, liberación a `main` y verificación antes del merge.
 

@@ -17,6 +17,7 @@ export interface ProductDto {
   sku?: string | null
   name?: string | null
   description?: string | null
+  image?: string | null
   price: number | string
 }
 
@@ -27,6 +28,7 @@ export function toProduct(dto: ProductDto): Product {
     name: dto.name ?? '',
     description: dto.description ?? '',
     price: Number(dto.price),
+    image: dto.image?.trim() ?? '',
   }
 }
 
@@ -40,9 +42,14 @@ export async function getProducts(): Promise<Product[]> {
   return (data.data ?? []).map(toProduct)
 }
 
-/** La API no expone un endpoint por id: el producto se busca en la lista. */
-export async function getProduct(id: number): Promise<Product> {
-  const product = (await getProducts()).find((item) => item.id === id)
+/** Busca un producto en el listado. Si no está, lanza un ApiError 404 como lo haría un endpoint por id. */
+export function findProductById(list: Product[], id: number): Product {
+  const product = list.find((item) => item.id === id)
   if (!product) throw new ApiError('El producto solicitado no existe.', 404)
   return product
+}
+
+/** La API no expone un endpoint por id: el producto se busca en la lista. */
+export async function getProduct(id: number): Promise<Product> {
+  return findProductById(await getProducts(), id)
 }

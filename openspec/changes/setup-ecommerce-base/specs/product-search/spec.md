@@ -68,6 +68,6 @@ Si ningún producto coincide con un término activo, el catálogo SHALL mostrar 
 Si el usuario escribe un término activo estando fuera del catálogo, la aplicación SHALL navegar al catálogo y mostrar los resultados filtrados.
 
 #### Scenario: Buscar desde el detalle
-- **GIVEN** el usuario está en `/products/7`
+- **GIVEN** el usuario está en `/producto/7`
 - **WHEN** escribe "Ensa"
 - **THEN** la aplicación navega a `/` y muestra solo "Ensalada"

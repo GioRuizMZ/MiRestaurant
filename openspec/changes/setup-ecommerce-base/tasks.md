@@ -36,7 +36,7 @@
 
 - [x] 5.1 Crear los atoms (Button, IconButton, Input, Badge, Price, Image, Skeleton, Spinner) con `formatPrice`. Verificar con tests de render y que `npm run lint` pasa.
 - [x] 5.2 Crear las molecules base (SearchBar, NavItem, EmptyState, ErrorState) y los organisms TopBar y Sidebar como presentación pura. Verificar con tests de render basados en props.
-- [x] 5.3 Crear el template `AppLayout`, `AppLayoutContainer`, el router (`/`, `/products/:id`, `/cart`, `*`), páginas placeholder y `NotFoundPage`. Verificar que las rutas renderizan dentro del layout en el navegador.
+- [x] 5.3 Crear el template `AppLayout`, `AppLayoutContainer`, el router (`/`, `/products/:id` (hoy `/producto/:id`, ver 9.3), `/cart`, `*`), páginas placeholder y `NotFoundPage`. Verificar que las rutas renderizan dentro del layout en el navegador.
 - [x] 5.4 Escribir `src/features/app-layout/app-layout.feature` con sus steps (indicador, logo, ruta activa, colapso, móvil, ruta inexistente). Verificar que `npm test` y `npm run check:traceability` pasan.
 
 ## 6. Publicar la base y preparar el flujo de ramas (git-workflow)
@@ -67,13 +67,20 @@
 - [ ] 8.4 Escribir `product-search.feature` con todos los escenarios y sus steps (fake timers para el debounce), y agregar `product-search` a la lista de trazabilidad. Verificar que `npm test` y `npm run check:traceability` pasan.
 - [ ] 8.5 Ejecutar `npm run verify`, hacer push y abrir el PR a `develop`. Verificar con `gh pr view`.
 
-## 9. Feature 2: Detalle (rama `feature/product-detail` → PR a `develop`)
+## 9. Feature 2: Detalle del producto (rama `feature/product-detail` → PR a `develop`)
 
-- [ ] 9.1 Crear `feature/product-detail` desde `develop` actualizado. Verificar con `git branch --show-current`.
-- [ ] 9.2 Crear la molecule `QuantitySelector` y el organism `ProductInfo`. Verificar con tests de render (mínimo 1).
-- [ ] 9.3 Implementar `ProductDetailPage` (datos inmediatos, 404, error con reintento, agregar con cantidad y aviso, volver conservando la búsqueda). Verificar en el navegador.
-- [ ] 9.4 Escribir `product-detail.feature` con sus steps y agregar `product-detail` a la lista de trazabilidad. Verificar que `npm test` y `npm run check:traceability` pasan.
-- [ ] 9.5 Ejecutar `npm run verify`, hacer push y abrir el PR a `develop`. Verificar con `gh pr view`.
+> Se adelanta a la búsqueda (grupo 8) porque no depende de ella. La búsqueda conservada al volver pasa al grupo 8.
+
+- [x] 9.1 Crear `feature/product-detail` desde `develop` actualizado (con el menú principal integrado). Verificar con `git branch --show-current` y que `git log` incluye el merge del PR #1.
+- [x] 9.2 Agregar `image` a `Product`, mapearlo en `toProduct` (`null` → `''`), agregar `findProductById(list, id)` y la imagen a los fixtures (`/mock-images/<id>.svg`), más un handler de MSW que sirva esos SVG. Verificar con tests unitarios de `productService`.
+- [x] 9.3 Cambiar la ruta del detalle a `/producto/:id` en `routes.tsx`, en el enlace del menú y en los tests y `.feature` de `app-layout` y `product-catalog`. Verificar que `npm test` y `npm run test:e2e` pasan.
+- [x] 9.4 Atom `Image`: ícono en el fallback, fallback `aria-hidden` si `alt` está vacío y prop `loading`. Mostrar la imagen en `ProductCard` (4:3, decorativa) y en el skeleton de `ProductGrid`. Verificar con tests de render y con los escenarios "Menú con productos" y "Producto sin imagen en el menú".
+- [x] 9.5 Cambiar `useProduct` a `ensureQueryData(productKeys.all)` + `findProductById`, manteniendo `placeholderData`. Verificar con tests de hooks que, con la caché fresca, no se hace una petición nueva y que el 404 no se reintenta.
+- [x] 9.6 Crear el organism `ProductInfo` y `ProductInfoSkeleton`. Verificar con tests de render (imagen con `alt`, nombre, descripción, precio y SKU) y que `npm run lint` pasa.
+- [x] 9.10 Crear la molecule `QuantitySelector` (1 a 99, botones deshabilitados en los límites) y agregar a `ProductInfo` el contador, el botón "Agregar al carrito" y el aviso, debajo de la descripción. Conectar en la page `addItem(product, quantity)`, el reinicio a 1 y el aviso. Verificar con tests de render y con los escenarios "Agregar varias unidades", "Sumar a un producto que ya está en el carrito" y "Cantidad mínima".
+- [x] 9.7 Implementar `ProductDetailPage`: validar el id, mostrar skeleton, error con "Reintentar", "Producto no encontrado" e info, y el botón "Volver al menú principal". Verificar en el navegador, también al recargar `/producto/7`.
+- [x] 9.8 Escribir `src/features/product-detail/product-detail.feature` (`@component`) y `tests/e2e/features/product-detail.feature` (`@e2e`: "Ver detalle", "Volver al menú principal" y "Recargar la página") con sus steps, y agregar `product-detail` a `TRACED_CAPABILITIES`. Verificar que `npm test`, `npm run check:traceability` y `npm run test:e2e` pasan.
+- [x] 9.9 Ejecutar `npm run verify`, hacer push y abrir el PR a `develop`. Verificar con `gh pr view`.
 
 ## 10. Feature 3: Carrito (rama `feature/shopping-cart` → PR a `develop`)
 

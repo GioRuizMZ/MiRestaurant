@@ -17,13 +17,13 @@ function renderGrid(props: Partial<ProductGridProps<Product>> = {}) {
         element: (
           <ProductGrid
             products={products.slice(0, 2)}
-            getProductHref={(product) => `/products/${product.id}`}
+            getProductHref={(product) => `/producto/${product.id}`}
             onAddProduct={onAddProduct}
             {...props}
           />
         ),
       },
-      { path: '/products/:id', element: <p>detalle</p> },
+      { path: '/producto/:id', element: <p>detalle</p> },
     ],
     { initialEntries: ['/'] },
   )
@@ -32,12 +32,13 @@ function renderGrid(props: Partial<ProductGridProps<Product>> = {}) {
 }
 
 describe('ProductGrid', () => {
-  it('muestra una tarjeta por producto con nombre y precio, sin imagen', () => {
+  it('muestra una tarjeta por producto con imagen decorativa, nombre y precio', () => {
     renderGrid()
     const cards = within(screen.getByRole('list', { name: 'Productos' })).getAllByRole('listitem')
     expect(cards).toHaveLength(2)
-    expect(within(cards[0]).queryByRole('img')).not.toBeInTheDocument()
-    expect(within(cards[0]).getByRole('link', { name: 'Hamburguesa' })).toHaveAttribute('href', '/products/7')
+    expect(cards[0].querySelector('img')).toHaveAttribute('src', products[0].image)
+    expect(cards[0].querySelector('img')).toHaveAttribute('alt', '')
+    expect(within(cards[0]).getByRole('link', { name: 'Hamburguesa' })).toHaveAttribute('href', '/producto/7')
     expect(within(cards[0]).getByText('$12.50')).toBeInTheDocument()
   })
 
@@ -46,6 +47,14 @@ describe('ProductGrid', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Agregar Hamburguesa' }))
     expect(onAddProduct).toHaveBeenCalledWith(products[0])
     expect(router.state.location.pathname).toBe('/')
+  })
+
+  it('muestra un fondo neutro si el producto no tiene imagen', () => {
+    renderGrid({ products: [{ ...products[0], image: '' }] })
+    const card = within(screen.getByRole('list', { name: 'Productos' })).getByRole('listitem')
+    expect(card.querySelector('img')).toBeNull()
+    expect(within(card).getByTestId('image-fallback')).toHaveAttribute('aria-hidden', 'true')
+    expect(within(card).getByRole('button', { name: 'Agregar Hamburguesa' })).toBeInTheDocument()
   })
 
   it('muestra skeletons mientras carga', () => {
