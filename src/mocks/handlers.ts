@@ -1,25 +1,23 @@
 import { http, HttpResponse } from 'msw'
+import type { ApiEnvelope, ProductDto } from '@/services/productService'
 import type { Product } from '@/types/product'
-import { findProduct, products } from './data/products'
+import { products } from './data/products'
 
-// Las rutas usan comodín de origen para servir igual a cualquier VITE_API_URL.
-export const PRODUCTS_URL = '*/products'
-export const PRODUCT_URL = '*/products/:id'
+// Endpoint de productos de SrKiosco. El comodín de origen sirve a cualquier host
+// de VITE_API_URL y MSW ignora la query (?KioskID=...) al comparar.
+export const PRODUCTS_URL = '*/SrKioscoRemote/GetProducts'
 
-export const handlers = [
-  http.get(PRODUCTS_URL, () => HttpResponse.json(products)),
-  http.get(PRODUCT_URL, ({ params }) => {
-    const product = findProduct(Number(params.id))
-    return product ? HttpResponse.json(product) : HttpResponse.json({ message: 'Not found' }, { status: 404 })
-  }),
-]
+/** Respuesta con la forma real de la API (isSuccess llega en false aun con éxito). */
+export function envelope(list: ProductDto[]): ApiEnvelope<ProductDto[]> {
+  return { isSuccess: false, code: '0000', message: 'Procesado exitosamente.', data: list }
+}
+
+export const handlers = [http.get(PRODUCTS_URL, () => HttpResponse.json(envelope(products)))]
 
 /** Handlers para escenarios concretos (se usan con server.use / worker.use). */
 export const scenarioHandlers = {
-  productsList: (list: Product[]) => http.get(PRODUCTS_URL, () => HttpResponse.json(list)),
+  productsList: (list: Product[]) => http.get(PRODUCTS_URL, () => HttpResponse.json(envelope(list))),
   productsError: (status = 500) => http.get(PRODUCTS_URL, () => HttpResponse.json({}, { status })),
   productsPending: () => http.get(PRODUCTS_URL, () => new Promise<never>(() => {})),
-  productError: (status = 500) => http.get(PRODUCT_URL, () => HttpResponse.json({}, { status })),
-  productPending: () => http.get(PRODUCT_URL, () => new Promise<never>(() => {})),
   networkError: () => http.get(PRODUCTS_URL, () => HttpResponse.error()),
 }

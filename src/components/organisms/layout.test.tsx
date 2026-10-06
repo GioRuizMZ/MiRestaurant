@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -75,21 +75,33 @@ describe('TopBar', () => {
 })
 
 describe('Sidebar', () => {
-  it('resalta el enlace de la ruta activa', () => {
-    inRouter(<Sidebar open overlay={false} onClose={vi.fn()} />, '/cart')
-    expect(screen.getByRole('link', { name: 'Carrito' })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('link', { name: 'Catálogo' })).not.toHaveAttribute('aria-current')
+  it('solo tiene el enlace "Menú" y lo resalta en el menú principal', () => {
+    inRouter(<Sidebar open overlay={false} onClose={vi.fn()} />, '/')
+    const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
+    expect(within(nav).getAllByRole('link')).toHaveLength(1)
+    expect(within(nav).getByRole('link', { name: 'Menú' })).toHaveAttribute('aria-current', 'page')
+    expect(within(nav).queryByRole('link', { name: 'Carrito' })).not.toBeInTheDocument()
   })
 
-  it('se oculta cuando está colapsado', () => {
-    inRouter(<Sidebar open={false} overlay={false} onClose={vi.fn()} />)
+  it('cerrado queda inerte y oculto para lectores de pantalla', () => {
+    const { container } = inRouter(<Sidebar open={false} overlay={false} onClose={vi.fn()} />)
     expect(screen.queryByRole('navigation', { name: 'Navegación principal' })).not.toBeInTheDocument()
+    const aside = container.querySelector('#app-sidebar')!
+    expect(aside).toHaveAttribute('inert')
+    expect(aside).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('anima el cambio con una transición de 200 ms', () => {
+    const { container } = inRouter(<Sidebar open overlay onClose={vi.fn()} />)
+    const aside = container.querySelector('#app-sidebar')!
+    expect(aside.className).toContain('duration-200')
+    expect(aside.className).toContain('translate-x-0')
   })
 
   it('en modo superpuesto se cierra al navegar', () => {
     const onClose = vi.fn()
     inRouter(<Sidebar open overlay onClose={onClose} />)
-    fireEvent.click(screen.getByRole('link', { name: 'Carrito' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Menú' }))
     expect(onClose).toHaveBeenCalled()
   })
 })

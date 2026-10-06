@@ -12,7 +12,7 @@ MiRestaurant es un repositorio nuevo, sin código. Si el catálogo, el detalle y
 - Estándar de **componentes**: atomic design (atoms, molecules, organisms, templates, pages), con componentes solo de presentación y la lógica en hooks y containers.
 - **Layout** de la aplicación: barra superior, barra lateral y un outlet donde se renderizan las rutas hijas.
 - Estándar de **pruebas BDD**: los escenarios de las specs se ejecutan como archivos `.feature` en dos niveles, componentes (jsdom + API mockeada) y E2E (navegador real).
-- Feature 1, **catálogo**: pantalla principal con el listado de productos.
+- Feature 1, **menú principal**: pantalla principal con los productos ordenados de la A a la Z por nombre. Cada tarjeta muestra nombre, precio y un botón "Agregar", sin imagen. Hacer click en la tarjeta abre el detalle. La interfaz es minimalista y moderna, con colores neutros y hovers en botones y tarjetas.
 - **Búsqueda**: barra que filtra productos en tiempo real a partir de 4 caracteres y muestra un estado vacío cuando no hay resultados.
 - Feature 2, **detalle de producto**: al hacer click en un producto se ve su información completa.
 - Feature 3, **carrito**: estado global del pedido. Agregar un producto que ya está en el carrito aumenta su cantidad.
@@ -28,7 +28,7 @@ MiRestaurant es un repositorio nuevo, sin código. Si el catálogo, el detalle y
 - `component-architecture`: niveles de atomic design, separación entre presentación y lógica, y reglas de dependencia.
 - `app-layout`: estructura de la aplicación con TopBar, Sidebar y Outlet, y navegación entre rutas.
 - `testing-bdd`: trazabilidad entre escenarios de spec y archivos `.feature`, y niveles de ejecución.
-- `product-catalog`: pantalla principal con el listado de productos y sus estados de carga, error y vacío.
+- `product-catalog`: menú principal con el listado de productos ordenado por nombre, sus estados de carga, error y vacío, y la navegación al detalle.
 - `product-search`: filtrado de productos en tiempo real desde la barra de búsqueda.
 - `product-detail`: vista con la información completa de un producto.
 - `shopping-cart`: gestión del pedido (agregar, acumular cantidades, modificar, quitar y totales).
@@ -43,5 +43,5 @@ Ninguna. El proyecto todavía no tiene specs.
 - **Código**: se crea toda la base de la app en la raíz de `MiRestaurant` (`package.json`, `src/`, `tests/e2e/`, configuración de tooling).
 - **Dependencias nuevas**: react, react-dom, react-router, zustand, axios, @tanstack/react-query, tailwindcss, vitest, @testing-library/react, msw, @amiceli/vitest-cucumber, @playwright/test, playwright-bdd.
 - **Configuración**: `VITE_API_URL` y `VITE_API_TOKEN` en `.env` (fuera del repositorio) y un `.env.example` versionado.
-- **API**: contrato provisional `GET /products` y `GET /products/:id`, pendiente de confirmar contra la API real.
+- **API**: endpoint de SrKiosco `GetProducts` (URL absoluta en `VITE_API_URL`), con respuesta envuelta en `{ isSuccess, code, message, data }`.
 - **Repositorio**: primer commit en `main` con la base y las specs, creación de `develop`, una rama `feature/*` con su PR a `develop` por cada feature, y protección de `main` y `develop` en GitHub.

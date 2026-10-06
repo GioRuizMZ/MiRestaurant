@@ -6,9 +6,7 @@ import { toApiError } from './apiError'
 export const apiClient = axios.create({ timeout: 10_000 })
 
 apiClient.interceptors.request.use((config) => {
-  const { apiUrl, apiToken } = getEnv()
-  config.baseURL = apiUrl
-  config.headers.set('Authorization', `Bearer ${apiToken}`)
+  config.headers.set('Authorization', `Bearer ${getEnv().apiToken}`)
   return config
 })
 

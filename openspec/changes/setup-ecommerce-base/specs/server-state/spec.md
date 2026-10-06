@@ -28,7 +28,7 @@ Mientras un dato esté fresco (por defecto 5 minutos), volver a una pantalla que
 - **GIVEN** el catálogo se cargó hace menos de 5 minutos
 - **WHEN** el usuario navega al detalle y vuelve al catálogo
 - **THEN** el listado aparece de inmediato, sin indicador de carga
-- **AND** no se hace una nueva petición a `/products`
+- **AND** no se hace una nueva petición a la API
 
 ### Requirement: Estados de carga y error explícitos
 Toda pantalla que consume datos del servidor SHALL mostrar un estado de carga mientras no hay datos y un estado de error con opción de reintentar si la petición falla.

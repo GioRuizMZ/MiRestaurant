@@ -14,12 +14,21 @@ Toda petición a la API SHALL pasar por un único cliente HTTP centralizado. Nin
 - **THEN** la petición sale del cliente centralizado a través de un servicio
 - **AND** no existe ninguna otra instancia ni llamada HTTP en el código de la aplicación
 
-### Requirement: URL base desde el entorno
-El cliente SHALL tomar la URL base de la API de la variable de entorno `VITE_API_URL`. Esa URL no se escribe en ningún otro lugar del código.
+### Requirement: URL absoluta desde el entorno
+La URL del endpoint de productos SHALL tomarse de la variable de entorno `VITE_API_URL` como URL absoluta, incluida su ruta y su query (por ejemplo `KioskID`), y usarse tal cual, sin agregarle rutas ni barras. Esa URL no se escribe en ningún otro lugar del código.
 
-#### Scenario: Petición relativa
-- **WHEN** un servicio pide `/products`
-- **THEN** la petición se envía a `${VITE_API_URL}/products`
+#### Scenario: Petición a la URL absoluta
+- **GIVEN** `VITE_API_URL` vale `https://srkiosco-api-beta.azurewebsites.net/SrKioscoRemote/GetProducts?KioskID=8`
+- **WHEN** la aplicación pide la lista de productos
+- **THEN** la petición se envía exactamente a esa URL
+
+### Requirement: Respuesta envuelta de la API
+La API responde con un sobre `{ isSuccess, code, message, data }`. Los productos SHALL leerse de `data`, sin depender de `isSuccess`, porque la API lo devuelve en `false` incluso cuando responde con éxito. Si `data` es nulo, la lista se trata como vacía.
+
+#### Scenario: isSuccess en false con datos
+- **GIVEN** la API responde `isSuccess: false`, `code: "0000"` y 3 productos en `data`
+- **WHEN** la aplicación pide la lista de productos
+- **THEN** obtiene los 3 productos
 
 ### Requirement: Autenticación con JWT fijo
 El cliente SHALL adjuntar a cada petición la cabecera `Authorization: Bearer <token>`, con el token leído de la variable de entorno `VITE_API_TOKEN`.

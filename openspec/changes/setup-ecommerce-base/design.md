@@ -152,7 +152,7 @@ Regla de ESLint (`no-restricted-imports`) aplicada a `src/components/**`: prohí
 
 ### 7. Carrito
 
-- `cartStore`: `items: CartItem[]` con `{ id, name, price, image, quantity }`. Acciones: `addItem(product, qty = 1)` (si el id ya existe, suma), `increment(id)`, `decrement(id)` (si llega a 0, quita la línea), `removeItem(id)` y `clear()`.
+- `cartStore`: `items: CartItem[]` con `{ id, sku, name, price, quantity }`. Acciones: `addItem(product, qty = 1)` (si el id ya existe, suma), `increment(id)`, `decrement(id)` (si llega a 0, quita la línea), `removeItem(id)` y `clear()`.
 - Los valores derivados (`totalItems`, `totalPrice`, `subtotal`) se calculan en `useCart` con selectores, no se guardan en el store.
 - `persist` usa la clave `mirestaurant-cart` con `version: 1` y una función `migrate`. Si el JSON está corrupto, se arranca con el carrito vacío.
 - El precio guardado en la línea es una decisión de la spec: el carrito no depende de la API.
@@ -172,16 +172,23 @@ createBrowserRouter([
 
 `AppLayout` (template) recibe `cartCount`, `searchValue`, `onSearchChange`, `sidebarOpen`, `onToggleSidebar` y `children`, y no sabe nada de los stores. Breakpoint `md` (768 px): por debajo, el sidebar es un drawer superpuesto que se cierra con cada cambio de `location`.
 
-### 9. Contrato provisional de la API
+### 9. Contrato de la API (SrKiosco)
 
 ```
-GET /products      -> Product[]
-GET /products/:id  -> Product | 404
-Product = { id: number; name: string; description: string;
-            price: number; image: string; category: string }
+GET <VITE_API_URL>     p. ej. https://srkiosco-api-beta.azurewebsites.net/SrKioscoRemote/GetProducts?KioskID=8
+Authorization: Bearer <VITE_API_TOKEN>
+-> { isSuccess: boolean, code: string, message: string, data: ProductDto[] | null }
+
+ProductDto = { id, sku, barcode, name, description, image, price, isAvailable,
+               reference, category, orderIndex, printers[], modifier[] }
+Product    = { id: number; sku: string; name: string; description: string; price: number }
 ```
 
-Si la API real usa otros nombres de campos, el mapeo se hace **solo** en `productService` (API → `Product`). El resto de la app no cambia.
+- `VITE_API_URL` es la **URL absoluta** del endpoint y se usa tal cual: el cliente no tiene `baseURL` ni concatena rutas.
+- Los productos se leen de `data`. `isSuccess` se ignora porque llega en `false` incluso con `code: "0000"` ("Procesado exitosamente").
+- **No hay endpoint por id**: `getProduct(id)` busca en la lista y lanza `ApiError` 404 si no existe.
+- El mapeo `ProductDto → Product` vive solo en `productService`. La API sí trae `image`, `category` e `isAvailable`, pero hoy el modelo `Product` no los usa (ver §13 y Open Questions).
+- MSW simula el endpoint `*/SrKioscoRemote/GetProducts` con el mismo sobre.
 
 ### 10. BDD en dos niveles
 
@@ -225,6 +232,50 @@ feature/shopping-cart                              *-*
 - Merge con **squash** desde `feature/*` a `develop` (un commit por feature) y **merge commit** desde `develop` a `main` (conserva la historia de la versión).
 - `.gitignore` incluye `node_modules`, `dist`, `.env`, `.env.*` (excepto `.env.example`), `test-results`, `playwright-report` y `.features-gen`.
 
+### 13. Feature 1: Menú principal
+
+```
++--------------------------------------------------------------+
+| Menu principal                                               |
+|                                                              |
+| +------------+  +------------+  +------------+  +----------+ |
+| | Cafe       |  | Coca-Cola  |  | Ensalada   |  | Hamburg. | |   <- sin imagen:
+| | americano  |  |            |  |            |  |          | |      nombre arriba,
+| |            |  |            |  |            |  |          | |      precio y boton
+| | $3.50 [Agr]|  | $2.50 [Agr]|  | $8.00 [Agr]|  |$12.50 [A]| |      abajo
+| +------------+  +------------+  +------------+  +----------+ |
++--------------------------------------------------------------+
+  grilla: 1 col (movil) / 2 (sm) / 3 (lg) / 4 (xl)
+```
+
+**Orden alfabético**
+- `lib/sortProductsByName.ts` ordena una copia con `Intl.Collator('es', { sensitivity: 'base', numeric: true })`. Con eso las mayúsculas y las tildes no afectan el orden, y "Ñ" queda después de "N".
+- El orden lo aplica la página sobre los datos de `useProducts()`, con `useMemo`, sin tocar la caché. Si después se suma la búsqueda, primero se filtra y luego se ordena, así los resultados filtrados también quedan de la A a la Z.
+- Alternativa descartada: usar `select` en `useProducts`. Mezcla una decisión de presentación con la query y obligaría a que todos los consumidores reciban la lista ordenada.
+
+**Sin imagen**
+- Los productos no tienen imagen, así que la tarjeta no reserva un área para ella: muestra el nombre (hasta 2 líneas) arriba y, abajo, el precio y el botón "Agregar". El skeleton de carga tiene la misma forma.
+- Se descartó un placeholder con la inicial: ocupaba espacio sin aportar información.
+
+**Tarjeta clicable con un botón dentro**
+- Se usa el patrón de "stretched link": el nombre es un `<Link to="/products/:id">` con un pseudo-elemento `after:absolute after:inset-0` que cubre toda la tarjeta. El botón "Agregar" va en `relative z-10`, así queda encima del enlace y no navega.
+- Se descartó envolver toda la tarjeta en un `<a>`: un `<button>` dentro de un `<a>` es HTML inválido y rompe la navegación con teclado.
+- El foco visible se aplica con `focus-within:ring` en la tarjeta.
+
+**Paleta neutra, minimalista y moderna**
+- Se reemplazan los tokens de `@theme` (en `index.css`) por una escala neutra:
+  - `--color-primary` pasa a `#171717` (neutral-900), con hover `#404040`;
+  - `canvas` a `#fafafa`, `line` a `#e5e5e5`, `muted` a `#737373` y `primary-50` a `#f5f5f5`.
+- Como los componentes ya usan tokens, el TopBar, el Sidebar y los botones cambian de paleta sin tocar su código.
+- Tarjeta: fondo `surface`, borde `line`, `rounded-card`. En hover: `shadow-md`, `-translate-y-0.5` y transición de 150 ms. Respeta `prefers-reduced-motion` con `motion-safe:`.
+- Botón "Agregar": variante `secondary`. En hover pasa a fondo `primary` y texto blanco.
+- Tipografía: nombre en `font-medium`, precio en `tabular-nums`, título "Menú principal" en `text-2xl font-semibold tracking-tight`.
+
+**Nivel de cada escenario**
+- Los escenarios de "Respuesta visual a la interacción" se ejecutan en `@e2e`, porque jsdom no calcula estilos de hover. Playwright compara el `background-color` computado antes y durante el `hover()`, y comprueba el foco con `toBeFocused` y el estilo del contenedor.
+- El resto de los escenarios corren en `@component`.
+- "Abrir detalle" y "Orden A a Z" también tienen escenario `@e2e`, para cubrir el flujo real en el navegador.
+
 ## Risks / Trade-offs
 
 - [El JWT es visible en el bundle] → Es aceptable solo porque se trata de un token fijo del reto. Queda documentado en `.env.example` y en el README. Si se pasa a producción, el token debería moverse a un proxy o BFF.
@@ -244,4 +295,7 @@ No hay nada que migrar porque el repositorio está vacío. Rollback: como es el 
 ## Open Questions
 
 - Los valores reales de `VITE_API_URL` y `VITE_API_TOKEN` y los nombres de campo de la API real. Solo afectan a `productService`, los fixtures y `.env`, no a las specs.
+- **`category` e `isAvailable`** llegan en la respuesta de la API pero el modelo `Product` no los usa. Se decide al planificar búsqueda y detalle.
+- **KioskID**: el kiosco es el 8 (`KioskID=8`, 54 productos). Se configura solo en `VITE_API_URL`.
+- **El modelo sin `image` ni `category` afecta a otras specs**, que todavía los mencionan: `product-search` (coincidencia por categoría), `product-detail` (imagen y categoría) y `shopping-cart` (imagen de cada línea). Se resuelven al planificar cada una de esas features. No bloquean el menú principal.
 - La moneda y el locale de los precios. Por ahora se usa `en-US` con `USD`, que produce `$12.50` como piden los escenarios (`es` produciría `12,50 US$`). Es configurable en `formatPrice`, pero si se cambia hay que actualizar los escenarios.

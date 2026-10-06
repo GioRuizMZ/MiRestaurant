@@ -24,8 +24,9 @@ Feature: app-layout
     Then la aplicación navega al catálogo
 
   Scenario: Ruta activa
-    When el usuario está en la ruta del carrito
-    Then el enlace "Carrito" de la barra lateral aparece resaltado
+    When el usuario está en el menú principal
+    Then el enlace "Menú" de la barra lateral aparece resaltado
+    And la barra lateral no tiene un enlace "Carrito"
 
   Scenario: Colapsar en escritorio
     Given el viewport mide 1280 px y la barra lateral está expandida
@@ -33,9 +34,9 @@ Feature: app-layout
     Then la barra lateral se colapsa y el contenido ocupa el espacio liberado
 
   Scenario: Móvil
-    Given el viewport mide 375 px
-    When el usuario abre el menú y elige "Carrito"
-    Then la aplicación navega al carrito y el panel lateral se cierra
+    Given el viewport mide 375 px y el usuario está en el carrito
+    When el usuario abre el menú y elige "Menú"
+    Then la aplicación navega al menú principal y el panel lateral se cierra
 
   Scenario: Ruta inexistente
     When el usuario visita "/no-existe"
