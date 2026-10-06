@@ -68,7 +68,7 @@ Abrir y cerrar la barra lateral SHALL animarse con una transición de 200 ms: en
 - **THEN** el panel lateral entra deslizándose desde la izquierda con una transición de 200 ms
 
 ### Requirement: Rutas de la aplicación
-La aplicación SHALL exponer las rutas `/` (catálogo), `/products/:id` (detalle) y `/cart` (carrito). Cualquier otra ruta muestra una página de "no encontrado" dentro del layout, con un enlace al catálogo.
+La aplicación SHALL exponer las rutas `/` (catálogo), `/producto/:id` (detalle) y `/cart` (carrito). Cualquier otra ruta muestra una página de "no encontrado" dentro del layout, con un enlace al catálogo.
 
 #### Scenario: Ruta inexistente
 - **WHEN** el usuario visita `/no-existe`

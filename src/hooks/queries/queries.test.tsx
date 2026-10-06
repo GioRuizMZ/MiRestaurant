@@ -72,6 +72,30 @@ describe('useProduct', () => {
     await waitFor(() => expect(result.current.isPlaceholderData).toBe(false))
   })
 
+  it('con el listado fresco en caché no hace una petición nueva', async () => {
+    let requests = 0
+    server.use(
+      http.get(PRODUCTS_URL, () => {
+        requests += 1
+        return HttpResponse.json(envelope(products))
+      }),
+    )
+    const queryClient = createQueryClient()
+    queryClient.setQueryData(productKeys.all, products)
+    const { result } = renderHook(() => useProduct(7), { wrapper: wrapperFor(queryClient) })
+    await waitFor(() => expect(result.current.isPlaceholderData).toBe(false))
+    expect(result.current.data?.sku).toBe('PLT-007')
+    expect(requests).toBe(0)
+  })
+
+  it('sin caché pide el listado una vez y lo deja en caché para el menú', async () => {
+    const queryClient = createQueryClient()
+    const { result } = renderHook(() => useProduct(7), { wrapper: wrapperFor(queryClient) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data?.name).toBe('Hamburguesa')
+    expect(queryClient.getQueryData(productKeys.all)).toEqual(products)
+  })
+
   it('no reintenta cuando el producto no existe (404)', async () => {
     let requests = 0
     server.use(

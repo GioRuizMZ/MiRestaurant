@@ -30,10 +30,10 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
       sidebarBefore = sidebarNav()
     })
     When('abre el detalle de un producto', async () => {
-      await act(() => app.router.navigate('/products/7'))
+      await act(() => app.router.navigate('/producto/7'))
     })
     Then('el área de contenido muestra el detalle', () => {
-      expect(app.router.state.location.pathname).toBe('/products/7')
+      expect(app.router.state.location.pathname).toBe('/producto/7')
       expect(within(mainArea()).queryByText('Página no encontrada')).not.toBeInTheDocument()
     })
     And('la barra superior y la barra lateral siguen visibles sin volver a montarse', () => {

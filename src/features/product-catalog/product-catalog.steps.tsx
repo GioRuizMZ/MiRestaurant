@@ -18,6 +18,7 @@ function productsNamed(...names: string[]): Product[] {
     name,
     description: '',
     price: 10 + index,
+    image: '',
   }))
 }
 
@@ -48,16 +49,35 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     When('el usuario abre la pantalla principal', () => {
       app = renderApp('/')
     })
-    Then('ve el título "Menú principal" y 3 tarjetas, cada una con nombre y precio y sin imagen', async () => {
+    Then('ve el título "Menú principal" y 3 tarjetas, cada una con imagen, nombre y precio', async () => {
       expect(screen.getByRole('heading', { level: 1, name: 'Menú principal' })).toBeInTheDocument()
       const items = within(await productList()).getAllByRole('listitem')
       expect(items).toHaveLength(3)
       for (const item of items) {
-        expect(within(item).queryByRole('img')).not.toBeInTheDocument()
+        expect(item.querySelector('img')).toHaveAttribute('src', expect.stringMatching(/^\/mock-images\/\d+\.svg$/))
         expect(within(item).getByRole('heading')).not.toBeEmptyDOMElement()
         expect(within(item).getByText(/^\$\d+\.\d{2}$/)).toBeInTheDocument()
       }
     })
+  })
+
+  Scenario('Producto sin imagen en el menú', ({ Given, When, Then }) => {
+    Given('la API devuelve "Hamburguesa" sin imagen', () => {
+      server.use(scenarioHandlers.productsList([{ ...products[0], image: '' }, ...products.slice(1)]))
+    })
+    When('el usuario abre la pantalla principal', () => {
+      app = renderApp('/')
+    })
+    Then(
+      'la tarjeta de "Hamburguesa" muestra un fondo neutro en lugar de la imagen, con su nombre, su precio y el botón "Agregar"',
+      async () => {
+        const card = await cardOf('Hamburguesa')
+        expect(card.querySelector('img')).toBeNull()
+        expect(within(card).getByTestId('image-fallback')).toBeInTheDocument()
+        expect(within(card).getByText('$12.50')).toBeInTheDocument()
+        expect(within(card).getByRole('button', { name: /agregar/i })).toBeInTheDocument()
+      },
+    )
   })
 
   Scenario('Orden A a Z', ({ Given, When, Then }) => {
@@ -146,8 +166,8 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
       const card = await cardOf('Hamburguesa')
       await app.user.click(within(card).getByRole('link', { name: 'Hamburguesa' }))
     })
-    Then('la aplicación navega a "/products/7"', () => {
-      expect(app.router.state.location.pathname).toBe('/products/7')
+    Then('la aplicación navega a "/producto/7"', () => {
+      expect(app.router.state.location.pathname).toBe('/producto/7')
     })
   })
 

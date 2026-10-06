@@ -54,6 +54,22 @@ describe('atoms', () => {
     expect(screen.getByRole('img', { name: 'Ensalada' }).tagName).toBe('DIV')
   })
 
+  it('Image decorativa (alt vacío) oculta su fondo neutro a los lectores de pantalla', () => {
+    render(<Image src="" alt="" />)
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(screen.getByTestId('image-fallback')).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('Image permite carga inmediata', () => {
+    render(<Image src="https://example.test/x.png" alt="Café" loading="eager" />)
+    expect(screen.getByRole('img', { name: 'Café' })).toHaveAttribute('loading', 'eager')
+  })
+
+  it('Image puede mostrar la imagen completa (contain)', () => {
+    render(<Image src="https://example.test/x.png" alt="Té" fit="contain" />)
+    expect(screen.getByRole('img', { name: 'Té' }).className).toContain('object-contain')
+  })
+
   it('Skeleton está oculto para lectores de pantalla y Spinner anuncia la carga', () => {
     const { container } = render(
       <>

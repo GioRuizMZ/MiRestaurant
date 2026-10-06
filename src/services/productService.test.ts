@@ -4,7 +4,7 @@ import { products } from '@/mocks/data/products'
 import { envelope, PRODUCTS_URL } from '@/mocks/handlers'
 import { server } from '@/mocks/server'
 import { resetTestState } from '@/test/resetTestState'
-import { getProduct, getProducts, toProduct } from './productService'
+import { findProductById, getProduct, getProducts, toProduct } from './productService'
 
 afterEach(resetTestState)
 
@@ -45,18 +45,36 @@ describe('productService', () => {
         sku: 'PIBE',
         name: 'Pistacho Beat',
         description: 'Croissant ultra crujiente',
+        image: 'https://srkiosco.blob.core.windows.net/prd/product-images/ic_image_717.png',
         price: '85.0000',
       }),
-    ).toEqual({ id: 717, sku: 'PIBE', name: 'Pistacho Beat', description: 'Croissant ultra crujiente', price: 85 })
+    ).toEqual({
+      id: 717,
+      sku: 'PIBE',
+      name: 'Pistacho Beat',
+      description: 'Croissant ultra crujiente',
+      price: 85,
+      image: 'https://srkiosco.blob.core.windows.net/prd/product-images/ic_image_717.png',
+    })
   })
 
   it('tolera campos nulos', () => {
-    expect(toProduct({ id: '3', sku: null, name: null, description: null, price: 2.5 })).toEqual({
+    expect(toProduct({ id: '3', sku: null, name: null, description: null, image: null, price: 2.5 })).toEqual({
       id: 3,
       sku: '',
       name: '',
       description: '',
       price: 2.5,
+      image: '',
     })
+  })
+
+  it('trata una imagen en blanco como sin imagen', () => {
+    expect(toProduct({ id: 3, image: '   ', price: 1 }).image).toBe('')
+  })
+
+  it('findProductById busca en el listado y lanza 404 si no está', () => {
+    expect(findProductById(products, 7).name).toBe('Hamburguesa')
+    expect(() => findProductById(products, 999)).toThrow(expect.objectContaining({ status: 404 }))
   })
 })

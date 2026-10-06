@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/atoms/Skeleton'
 import { ProductCard } from '@/components/molecules/ProductCard'
 import type { Product } from '@/types/product'
 
-type GridProduct = Pick<Product, 'id' | 'name' | 'price'>
+type GridProduct = Pick<Product, 'id' | 'name' | 'price' | 'image'>
 
 export interface ProductGridProps<T extends GridProduct> {
   products: T[]
@@ -27,12 +27,15 @@ export function ProductGrid<T extends GridProduct>({
           <div
             key={index}
             data-testid="product-skeleton"
-            className="flex flex-col gap-6 rounded-card border border-line bg-surface p-5"
+            className="flex flex-col overflow-hidden rounded-card border border-line bg-surface"
           >
-            <Skeleton className="h-4 w-3/4" />
-            <div className="flex items-center justify-between gap-3">
-              <Skeleton className="h-5 w-16" />
-              <Skeleton className="h-8 w-20" />
+            <Skeleton className="aspect-[4/3] w-full rounded-none" />
+            <div className="flex flex-col gap-6 p-5">
+              <Skeleton className="h-4 w-3/4" />
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-8 w-20" />
+              </div>
             </div>
           </div>
         ))}

@@ -7,12 +7,20 @@ Menú principal de MiRestaurant: muestra los productos disponibles ordenados por
 ## ADDED Requirements
 
 ### Requirement: Listado de productos
-La pantalla principal (`/`) SHALL mostrar, bajo el título "Menú principal", todos los productos devueltos por la API en una grilla de tarjetas. Cada tarjeta muestra el nombre y el precio formateado en moneda, sin imagen, porque los productos no tienen imagen.
+La pantalla principal (`/`) SHALL mostrar, bajo el título "Menú principal", todos los productos devueltos por la API en una grilla de tarjetas. Cada tarjeta muestra la imagen del producto que envía la API, el nombre y el precio formateado en moneda.
 
 #### Scenario: Menú con productos
 - **GIVEN** la API devuelve 3 productos
 - **WHEN** el usuario abre la pantalla principal
-- **THEN** ve el título "Menú principal" y 3 tarjetas, cada una con nombre y precio y sin imagen
+- **THEN** ve el título "Menú principal" y 3 tarjetas, cada una con imagen, nombre y precio
+
+### Requirement: Imagen que no carga
+Si un producto no tiene imagen o su imagen no carga, la tarjeta SHALL mostrar en su lugar un fondo neutro del mismo tamaño, para que la grilla conserve su forma.
+
+#### Scenario: Producto sin imagen en el menú
+- **GIVEN** la API devuelve "Hamburguesa" sin imagen
+- **WHEN** el usuario abre la pantalla principal
+- **THEN** la tarjeta de "Hamburguesa" muestra un fondo neutro en lugar de la imagen, con su nombre, su precio y el botón "Agregar"
 
 ### Requirement: Orden alfabético por nombre
 Los productos SHALL mostrarse ordenados por nombre de la A a la Z, sin distinguir mayúsculas, minúsculas ni tildes, independientemente del orden en que los devuelva la API.
@@ -56,11 +64,11 @@ Si la API devuelve una lista vacía, la pantalla SHALL mostrar el mensaje "No ha
 - **THEN** ve el mensaje "No hay productos disponibles"
 
 ### Requirement: Navegación al detalle
-Hacer click en cualquier parte de una tarjeta de producto (nombre, precio o espacio libre), salvo en su botón "Agregar", SHALL navegar a la pantalla de detalle de ese producto.
+Hacer click en cualquier parte de una tarjeta de producto (imagen, nombre, precio o espacio libre), salvo en su botón "Agregar", SHALL navegar a la pantalla de detalle de ese producto.
 
 #### Scenario: Abrir detalle
 - **WHEN** el usuario hace click en la tarjeta de "Hamburguesa" (id 7)
-- **THEN** la aplicación navega a `/products/7`
+- **THEN** la aplicación navega a `/producto/7`
 
 ### Requirement: Agregar desde el menú
 Cada tarjeta SHALL tener un botón "Agregar" que suma una unidad del producto al carrito sin salir del menú principal ni abrir el detalle.
