@@ -98,7 +98,7 @@
 - [x] 10.6 Agregar `itemLabel` a `QuantitySelector` y crear la molecule `OrderLine` y los organisms `OrderList` y `OrderSummary` (vaciar con confirmación en línea). Verificar con tests de render y que `npm run lint` pasa.
 - [x] 10.7 Implementar `OrderPage`: líneas, subtotales, totales, +/− (disminuir desde 1 quita la línea), "Quitar", "Vaciar pedido" con "Sí, vaciar" y "Cancelar", estado vacío con "Ver el menú" y `BackLink`. Verificar en el navegador.
 - [x] 10.8 Escribir `src/features/shopping-cart/shopping-cart.feature` (`@component`) y `tests/e2e/features/shopping-cart.feature` (`@e2e`: "Resumen en el menú y en el detalle" y "Navegar sin perder el pedido") con sus steps, y agregar `shopping-cart` a `TRACED_CAPABILITIES`. Verificar que `npm test`, `npm run check:traceability` y `npm run test:e2e` pasan.
-- [ ] 10.9 Ejecutar `npm run verify`, hacer push y abrir el PR a `develop`. Verificar con `gh pr view`.
+- [x] 10.9 Ejecutar `npm run verify`, hacer push y abrir el PR a `develop`. Verificar con `gh pr view`.
 
 ## 11. Release a main
 
