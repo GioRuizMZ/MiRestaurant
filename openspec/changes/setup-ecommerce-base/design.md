@@ -175,7 +175,7 @@ createBrowserRouter([
 ### 9. Contrato de la API (SrKiosco)
 
 ```
-GET <VITE_API_URL>     p. ej. https://srkiosco-api-beta.azurewebsites.net/SrKioscoRemote/GetProducts?KioskID=87
+GET <VITE_API_URL>     p. ej. https://srkiosco-api-beta.azurewebsites.net/SrKioscoRemote/GetProducts?KioskID=8
 Authorization: Bearer <VITE_API_TOKEN>
 -> { isSuccess: boolean, code: string, message: string, data: ProductDto[] | null }
 
@@ -296,6 +296,6 @@ No hay nada que migrar porque el repositorio está vacío. Rollback: como es el 
 
 - Los valores reales de `VITE_API_URL` y `VITE_API_TOKEN` y los nombres de campo de la API real. Solo afectan a `productService`, los fixtures y `.env`, no a las specs.
 - **`category` e `isAvailable`** llegan en la respuesta de la API pero el modelo `Product` no los usa. Se decide al planificar búsqueda y detalle.
-- **KioskID**: con `KioskID=87` la API devuelve hoy 0 productos; con `KioskID=8` devuelve 54 (todos con `category: 87`). Se configura solo en `VITE_API_URL`.
+- **KioskID**: el kiosco es el 8 (`KioskID=8`, 54 productos). Se configura solo en `VITE_API_URL`.
 - **El modelo sin `image` ni `category` afecta a otras specs**, que todavía los mencionan: `product-search` (coincidencia por categoría), `product-detail` (imagen y categoría) y `shopping-cart` (imagen de cada línea). Se resuelven al planificar cada una de esas features. No bloquean el menú principal.
 - La moneda y el locale de los precios. Por ahora se usa `en-US` con `USD`, que produce `$12.50` como piden los escenarios (`es` produciría `12,50 US$`). Es configurable en `formatPrice`, pero si se cambia hay que actualizar los escenarios.

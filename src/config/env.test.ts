@@ -3,8 +3,8 @@ import { readEnv } from './env'
 
 describe('readEnv', () => {
   it('usa la URL absoluta tal cual, solo sin espacios', () => {
-    expect(readEnv({ VITE_API_URL: ' https://api.test/GetProducts?KioskID=87 ', VITE_API_TOKEN: ' abc ' })).toEqual({
-      apiUrl: 'https://api.test/GetProducts?KioskID=87',
+    expect(readEnv({ VITE_API_URL: ' https://api.test/GetProducts?KioskID=8 ', VITE_API_TOKEN: ' abc ' })).toEqual({
+      apiUrl: 'https://api.test/GetProducts?KioskID=8',
       apiToken: 'abc',
     })
   })

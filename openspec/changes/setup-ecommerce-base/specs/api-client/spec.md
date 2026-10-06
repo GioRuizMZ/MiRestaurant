@@ -18,7 +18,7 @@ Toda petición a la API SHALL pasar por un único cliente HTTP centralizado. Nin
 La URL del endpoint de productos SHALL tomarse de la variable de entorno `VITE_API_URL` como URL absoluta, incluida su ruta y su query (por ejemplo `KioskID`), y usarse tal cual, sin agregarle rutas ni barras. Esa URL no se escribe en ningún otro lugar del código.
 
 #### Scenario: Petición a la URL absoluta
-- **GIVEN** `VITE_API_URL` vale `https://srkiosco-api-beta.azurewebsites.net/SrKioscoRemote/GetProducts?KioskID=87`
+- **GIVEN** `VITE_API_URL` vale `https://srkiosco-api-beta.azurewebsites.net/SrKioscoRemote/GetProducts?KioskID=8`
 - **WHEN** la aplicación pide la lista de productos
 - **THEN** la petición se envía exactamente a esa URL
 

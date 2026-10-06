@@ -18,7 +18,7 @@ describe('productService', () => {
       }),
     )
     await getProducts()
-    expect(requestedUrl).toBe('http://api.test/SrKioscoRemote/GetProducts?KioskID=87')
+    expect(requestedUrl).toBe('http://api.test/SrKioscoRemote/GetProducts?KioskID=8')
   })
 
   it('obtiene el listado desde data aunque isSuccess sea false', async () => {
