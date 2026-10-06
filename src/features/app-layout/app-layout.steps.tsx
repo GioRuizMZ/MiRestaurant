@@ -82,14 +82,15 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     })
   })
 
-  Scenario('Ruta activa', ({ When, Then }) => {
-    When('el usuario está en la ruta del carrito', () => {
-      app = renderApp('/cart')
+  Scenario('Ruta activa', ({ When, Then, And }) => {
+    When('el usuario está en el menú principal', () => {
+      app = renderApp('/')
     })
-    Then('el enlace "Carrito" de la barra lateral aparece resaltado', () => {
-      const nav = sidebarNav()!
-      expect(within(nav).getByRole('link', { name: 'Carrito' })).toHaveAttribute('aria-current', 'page')
-      expect(within(nav).getByRole('link', { name: 'Catálogo' })).not.toHaveAttribute('aria-current')
+    Then('el enlace "Menú" de la barra lateral aparece resaltado', () => {
+      expect(within(sidebarNav()!).getByRole('link', { name: 'Menú' })).toHaveAttribute('aria-current', 'page')
+    })
+    And('la barra lateral no tiene un enlace "Carrito"', () => {
+      expect(within(sidebarNav()!).queryByRole('link', { name: /carrito/i })).not.toBeInTheDocument()
     })
   })
 
@@ -111,18 +112,18 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   })
 
   Scenario('Móvil', ({ Given, When, Then }) => {
-    Given('el viewport mide 375 px', () => {
+    Given('el viewport mide 375 px y el usuario está en el carrito', () => {
       setViewportWidth(375)
       resetUiStore()
-      app = renderApp('/')
+      app = renderApp('/cart')
       expect(sidebarNav()).not.toBeInTheDocument()
     })
-    When('el usuario abre el menú y elige "Carrito"', async () => {
+    When('el usuario abre el menú y elige "Menú"', async () => {
       await app.user.click(screen.getByRole('button', { name: 'Menú' }))
-      await app.user.click(within(sidebarNav()!).getByRole('link', { name: 'Carrito' }))
+      await app.user.click(within(sidebarNav()!).getByRole('link', { name: 'Menú' }))
     })
-    Then('la aplicación navega al carrito y el panel lateral se cierra', () => {
-      expect(app.router.state.location.pathname).toBe('/cart')
+    Then('la aplicación navega al menú principal y el panel lateral se cierra', () => {
+      expect(app.router.state.location.pathname).toBe('/')
       expect(sidebarNav()).not.toBeInTheDocument()
     })
   })
